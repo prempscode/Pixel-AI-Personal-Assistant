@@ -47,7 +47,7 @@ async function runAgent(message) {
     });
 
     const assistantMessage = response.choices[0].message;
-
+  
     // 2. No more tools: return the final response.
     if (!assistantMessage.tool_calls?.length) {
       return {
