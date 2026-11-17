@@ -1,5 +1,6 @@
 const express = require("express");
-const getGeminiAI = require("../config/gemini");
+const runAgent = require("../agent/agent");
+const executeTool = require("../agent/toolExecutor");
 
 const router = express.Router();
 
@@ -7,7 +8,7 @@ router.post("/chat", async (req, res) => {
   try {
     const { message } = req.body;
 
-    if (!message || typeof message !== "string" || !message.trim()) {
+    if (typeof message !== "string" || !message.trim()) {
       return res.status(400).json({
         error: "Message is required",
       });
@@ -19,29 +20,36 @@ router.post("/chat", async (req, res) => {
       });
     }
 
-    const ai = await getGeminiAI();
+    // Ask Groq to understand the request.
+    const result = await runAgent(message);
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
-      contents: message,
-      config: {
-        systemInstruction: `
-                    You are a helpful AI personal assistant.
-                    Understand the user's requests and respond clearly.
-                    Do not claim to have performed external actions.
-                    You cannot access Google services or control websites yet.
-                `,
-      },
-    });
+    // Normal conversation.
+    if (result.type === "text") {
+      return res.json(result);
+    }
 
-    res.json({
-      reply: response.text,
+    // Execute selected tools one by one.
+    const toolResults = [];
+
+    for (const tool of result.toolCalls) {
+      const execution = await executeTool(tool.name, tool.args);
+
+      toolResults.push({
+        name: tool.name,
+        args: tool.args,
+        result: execution,
+      });
+    }
+
+    return res.json({
+      type: "tool_result",
+      toolResults,
     });
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    console.error("Agent Error:", error);
 
     res.status(500).json({
-      error: "Failed to generate AI response",
+      error: "Failed to process request",
     });
   }
 });

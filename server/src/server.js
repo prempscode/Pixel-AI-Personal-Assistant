@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
+const agentRoutes = require("./routes/agentRoutes");
+
 const app = express();
 
 app.use(cors());
@@ -12,6 +14,8 @@ app.get("/", (req, res) => {
     message: "AI Agent Server Running",
   });
 });
+
+app.use("/api/agent", agentRoutes);
 
 const PORT = process.env.PORT || 5000;
 
