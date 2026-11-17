@@ -8,6 +8,7 @@ export async function signInWithGoogle() {
       scopes: [
         "https://www.googleapis.com/auth/calendar.events",
         "https://www.googleapis.com/auth/tasks",
+        "https://www.googleapis.com/auth/gmail.compose",
         "https://www.googleapis.com/auth/drive.file",
         "https://www.googleapis.com/auth/documents",
       ].join(" "),
@@ -46,7 +47,7 @@ export async function saveGoogleTokens(session) {
   }
 
   const response = await fetch(
-    `${import.meta.env.VITE_BACKEND_URL}/google/connect`,
+    `${import.meta.env.VITE_BACKEND_URL}/api/google/connect`,
     {
       method: "POST",
       headers: {

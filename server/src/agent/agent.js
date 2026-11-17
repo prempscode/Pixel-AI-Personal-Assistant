@@ -2,7 +2,7 @@ const getGroqAI = require("../config/groq");
 const tools = require("./toolRegistry");
 const executeTool = require("./toolExecutor");
 
-async function runAgent(message) {
+async function runAgent(message, userId) {
   const groq = await getGroqAI();
 
   const messages = [
@@ -47,7 +47,7 @@ async function runAgent(message) {
     });
 
     const assistantMessage = response.choices[0].message;
-  
+
     // 2. No more tools: return the final response.
     if (!assistantMessage.tool_calls?.length) {
       return {
@@ -68,7 +68,7 @@ async function runAgent(message) {
       try {
         const args = JSON.parse(toolCall.function.arguments);
 
-        result = await executeTool(name, args);
+        result = await executeTool(name, args, userId);
       } catch (error) {
         result = {
           success: false,

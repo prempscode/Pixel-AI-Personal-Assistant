@@ -1,13 +1,10 @@
-function getCurrentTime(timezone) {
-  if (typeof timezone !== "string" || !timezone.trim()) {
-    throw new Error("A valid timezone is required.");
-  }
+const { createTask } = require("../integrations/google/tasks");
+const { createEvent } = require("../integrations/google/calendar");
+const { createDraft } = require("../integrations/google/gmail");
 
-  // Validate the timezone.
+function getCurrentTime(timezone) {
   try {
-    new Intl.DateTimeFormat("en-IN", {
-      timeZone: timezone,
-    });
+    new Intl.DateTimeFormat("en-IN", { timeZone: timezone });
   } catch {
     throw new Error("Invalid timezone.");
   }
@@ -25,48 +22,71 @@ function getCurrentTime(timezone) {
   };
 }
 
-async function executeTool(name, args) {
+async function executeTool(name, args, userId) {
   if (!args || typeof args !== "object" || Array.isArray(args)) {
-    return {
-      success: false,
-      error: "Invalid tool arguments.",
-    };
+    return { success: false, error: "Invalid tool arguments." };
   }
 
   try {
     switch (name) {
-      case "get_current_time": {
-        const result = getCurrentTime(args.timezone);
+      case "get_current_time":
+        return { success: true, data: getCurrentTime(args.timezone) };
 
+      case "create_google_task": {
+        const task = await createTask(userId, args);
         return {
           success: true,
-          data: result,
+          data: task,
+          message: `Task "${task.title}" created.`,
         };
       }
 
-      case "create_google_task":
-      case "create_calendar_event":
-      case "create_keep_note": {
-        // Google integrations are not connected yet.
-        // Never claim these actions were completed.
+      case "create_calendar_event": {
+        const event = await createEvent(userId, args);
+        return {
+          success: true,
+          data: event,
+          message: `Event "${event.title}" created. Link: ${event.url}`,
+        };
+      }
+
+      case "create_gmail_draft": {
+        const draft = await createDraft(userId, args);
+        return {
+          success: true,
+          data: draft,
+          message: `Draft to ${args.to} created.`,
+        };
+      }
+
+      case "open_website":
+        return {
+          success: true,
+          data: { url: args.url },
+          message: `Opening ${args.url}`,
+        };
+
+      case "search_google":
+        return {
+          success: true,
+          data: {
+            url: `https://www.google.com/search?q=${encodeURIComponent(args.query)}`,
+          },
+          message: `Searching Google for "${args.query}"`,
+        };
+
+      case "create_keep_note":
         return {
           success: false,
           status: "integration_not_configured",
-          message: `${name} is not connected yet.`,
+          message: "Google Keep is not connected yet (Phase 3).",
         };
-      }
 
       default:
-        return {
-          success: false,
-          error: `Unknown tool: ${name}`,
-        };
+        return { success: false, error: `Unknown tool: ${name}` };
     }
   } catch (error) {
-    return {
-      success: false,
-      error: error.message,
-    };
+    return { success: false, error: error.message };
   }
 }
 

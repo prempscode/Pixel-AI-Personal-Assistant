@@ -18,4 +18,20 @@ function encrypt(text) {
   };
 }
 
-module.exports = { encrypt };
+function decrypt(encrypted, iv, authTag) {
+  const decipher = crypto.createDecipheriv(
+    "aes-256-gcm",
+    key,
+    Buffer.from(iv, "hex"),
+  );
+  decipher.setAuthTag(Buffer.from(authTag, "hex"));
+
+  const decrypted = Buffer.concat([
+    decipher.update(Buffer.from(encrypted, "hex")),
+    decipher.final(),
+  ]);
+
+  return decrypted.toString("utf8");
+}
+
+module.exports = { encrypt, decrypt };

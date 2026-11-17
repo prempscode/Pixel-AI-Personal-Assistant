@@ -22,7 +22,7 @@ router.post("/chat", async (req, res) => {
       });
     }
 
-    const result = await runAgent(message);
+    const result = await runAgent(message, req.user.id);
 
     return res.json(result);
   } catch (error) {
