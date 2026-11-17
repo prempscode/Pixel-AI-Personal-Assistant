@@ -1,7 +1,10 @@
 const express = require("express");
 const runAgent = require("../agent/agent");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
+
+router.use(authMiddleware);
 
 router.post("/chat", async (req, res) => {
   try {

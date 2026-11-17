@@ -3,6 +3,7 @@ const cors = require("cors");
 require("dotenv").config();
 
 const agentRoutes = require("./routes/agentRoutes");
+const googleRoutes = require("./routes/googleRoutes");
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/agent", agentRoutes);
+app.use("/api/google", googleRoutes);
 
 const PORT = process.env.PORT || 5000;
 
