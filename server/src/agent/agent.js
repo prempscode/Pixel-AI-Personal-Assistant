@@ -1,33 +1,43 @@
 const getGroqAI = require("../config/groq");
 const tools = require("./toolRegistry");
 const executeTool = require("./toolExecutor");
+const Conversation = require("../models/Conversation");
 
 async function runAgent(message, userId) {
   const groq = await getGroqAI();
+
+  // Load conversation history (last 20 messages for context)
+  const convo = await Conversation.findOne({ userId });
+  const history = (convo?.messages || []).slice(-20);
 
   const messages = [
     {
       role: "system",
       content: `
-                You are an AI personal assistant.
+You are an AI personal assistant with access to the user's Google account.
 
-                Understand the user's requests and use
-                available tools whenever necessary.
+CURRENT TIME CONTEXT:
+For questions about current date or time, use get_current_time with Asia/Kolkata unless the user specifies otherwise.
 
-                For questions about current date or time,
-                always use get_current_time.
+TOOL SELECTION RULES:
+- create_google_task: For to-do items, notes, reminders, and checklist items WITHOUT a specific time slot.
+- create_calendar_event: For anything with a specific start and end time (meetings, appointments, time blocks).
+- create_gmail_draft: When the user wants to compose but NOT send an email.
+- send_gmail: Only when the user explicitly says "send" or "email to...". Otherwise use create_gmail_draft.
+- search_gmail: To find existing emails.
+- list_drive_files: To see recent files.
+- search_google_drive: To find specific files by name or content.
+- open_website / search_google: To open URLs or search the web.
 
-                Use Asia/Kolkata for India when no other
-                timezone is specified.
-
-                Never guess current information.
-
-                Never claim an action was completed unless
-                a tool confirms successful execution.
-
-                If a tool reports an error, explain it clearly.
-            `,
+CRITICAL RULES:
+1. NEVER claim an action was completed unless a tool confirms success.
+2. If a tool fails, explain the error clearly.
+3. When the user asks you to create content (write a body, compose text, draft a message), you MUST write that content yourself based on the request. Do NOT ask the user to provide it.
+4. When creating a task with a body/description, write meaningful content yourself.
+5. If multiple actions are requested, execute them in order and report each result separately.
+      `,
     },
+    ...history.map((m) => ({ role: m.role, content: m.text })),
     {
       role: "user",
       content: message,
@@ -35,6 +45,7 @@ async function runAgent(message, userId) {
   ];
 
   const maxIterations = 5;
+  const urls = [];
 
   for (let i = 0; i < maxIterations; i++) {
     // 1. Ask Groq what to do next.
@@ -48,11 +59,32 @@ async function runAgent(message, userId) {
 
     const assistantMessage = response.choices[0].message;
 
-    // 2. No more tools: return the final response.
+    // 2. No more tools: save to memory and return the final response.
     if (!assistantMessage.tool_calls?.length) {
+      const finalReply = assistantMessage.content || "";
+
+      // Save conversation to MongoDB
+      await Conversation.findOneAndUpdate(
+        { userId },
+        {
+          $push: {
+            messages: {
+              $each: [
+                { role: "user", text: message },
+                { role: "assistant", text: finalReply },
+              ],
+              $slice: -50, // keep last 50 messages only
+            },
+          },
+          $set: { updatedAt: new Date() },
+        },
+        { upsert: true },
+      );
+
       return {
         type: "text",
-        reply: assistantMessage.content || "",
+        reply: finalReply,
+        urls,
       };
     }
 
@@ -62,18 +94,21 @@ async function runAgent(message, userId) {
     // 4. Execute every requested tool.
     for (const toolCall of assistantMessage.tool_calls) {
       const name = toolCall.function.name;
-
       let result;
 
       try {
         const args = JSON.parse(toolCall.function.arguments);
-
         result = await executeTool(name, args, userId);
       } catch (error) {
         result = {
           success: false,
           error: error.message,
         };
+      }
+
+      // Collect URLs from open_website / search_google
+      if (result?.data?.url) {
+        urls.push(result.data.url);
       }
 
       // 5. Send the execution result back to Groq.
@@ -84,75 +119,15 @@ async function runAgent(message, userId) {
         content: JSON.stringify(result),
       });
     }
-
-    // Loop continues: Groq receives tool results
-    // and decides whether more tools are needed.
   }
 
+  // Max iterations reached
   return {
     type: "text",
     reply:
       "I reached the maximum number of tool operations. Please try a simpler request.",
+    urls,
   };
 }
 
 module.exports = runAgent;
-
-/*
-I implemented an AI agent using the Groq API.
-
-First, I imported three things: the Groq client, the tool registry, 
-and the tool executor.
-
-The Groq client is used to communicate with the AI model. 
-The tool registry contains the available tools that the AI can use, 
-and the tool executor is responsible for executing those tools in our backend.
-
-Then I created an asynchronous function called `runAgent`, which accepts 
-the user's message and user ID.
-
-I pass the user ID because our application supports multiple users, and we 
-need to manage each user's tasks separately.
-
-Next, I created a messages array containing two types of messages: 
-a system message and a user message.
-
-The system message contains instructions that define how our 
-AI assistant should behave, such as when to use tools, how to handle 
-errors, and why it should not guess current information.
-
-The user message contains the actual request.
-
-After that, I set a maximum iteration limit of five to prevent the 
-agent from running continuously.
-
-Inside a loop, I send the messages and available tools to the Groq API. 
-I use `tool_choice: auto` so that the AI can decide whether it needs 
-a tool or can answer directly.
-
-After receiving the response, I check whether the AI requested any tools.
-
-If no tool is required, I return the AI's response directly to the user.
-
-If a tool is required, I save the AI's tool-call message and 
-execute the requested tool using our tool executor.
-
-I also use `JSON.parse()` to convert the tool arguments into a 
-JavaScript object and pass the tool name, arguments, and user ID to the executor.
-
-I use try-catch to handle errors during tool execution.
-
-Once the tool is executed, I send its result back to Groq using a
-tool message. This allows the AI to understand whether 
-the operation succeeded or failed.
-
-The loop then continues, allowing the AI to request additional 
-tools if necessary or generate the final response.
-
-Finally, I export the `runAgent` function so that other backend 
-files, such as the chat controller, can use it.
-
-This approach allows our AI assistant to do more than just answer 
-questions. It can also perform actual operations through our backend tools.
-
-*/

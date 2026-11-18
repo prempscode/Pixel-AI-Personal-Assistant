@@ -3,7 +3,8 @@ const tools = [
     type: "function",
     function: {
       name: "create_google_task",
-      description: "Create a task in the user's Google Tasks.",
+      description:
+        "Create a to-do item in Google Tasks (a checklist item, not a calendar event). Use for reminders and to-dos without a specific time slot.",
       parameters: {
         type: "object",
         properties: {
@@ -18,7 +19,8 @@ const tools = [
     type: "function",
     function: {
       name: "create_calendar_event",
-      description: "Create an event in the user's Google Calendar.",
+      description:
+        "Block a specific time slot on Google Calendar. Use for meetings, appointments, or anything with a start and end time.",
       parameters: {
         type: "object",
         properties: {
@@ -49,21 +51,6 @@ const tools = [
           body: { type: "string", description: "Email body text." },
         },
         required: ["to", "subject", "body"],
-      },
-    },
-  },
-  {
-    type: "function",
-    function: {
-      name: "create_keep_note",
-      description: "Create a note in the user's Google Keep.",
-      parameters: {
-        type: "object",
-        properties: {
-          title: { type: "string", description: "The note title." },
-          content: { type: "string", description: "The note content." },
-        },
-        required: ["title", "content"],
       },
     },
   },
@@ -107,6 +94,67 @@ const tools = [
         type: "object",
         properties: {
           query: { type: "string", description: "The search query." },
+        },
+        required: ["query"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "send_gmail",
+      description: "Send an email from the user's Gmail account immediately.",
+      parameters: {
+        type: "object",
+        properties: {
+          to: { type: "string", description: "Recipient email address." },
+          subject: { type: "string", description: "Email subject." },
+          body: { type: "string", description: "Email body text." },
+        },
+        required: ["to", "subject", "body"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "search_gmail",
+      description: "Search the user's Gmail for emails matching a query.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: "Gmail search query, e.g. 'from:boss subject:report'",
+          },
+        },
+        required: ["query"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "list_drive_files",
+      description: "List the user's most recent files in Google Drive.",
+      parameters: {
+        type: "object",
+        properties: {},
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "search_google_drive",
+      description: "Search Google Drive for files by name or content.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: "Search term (file name or content).",
+          },
         },
         required: ["query"],
       },

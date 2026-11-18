@@ -1,6 +1,8 @@
 const { createTask } = require("../integrations/google/tasks");
 const { createEvent } = require("../integrations/google/calendar");
 const { createDraft } = require("../integrations/google/gmail");
+const { sendEmail, searchEmails } = require("../integrations/google/gmail");
+const { listFiles, searchDrive } = require("../integrations/google/drive");
 
 function getCurrentTime(timezone) {
   try {
@@ -75,12 +77,54 @@ async function executeTool(name, args, userId) {
           message: `Searching Google for "${args.query}"`,
         };
 
-      case "create_keep_note":
+      case "send_gmail": {
+        const sent = await sendEmail(userId, args);
         return {
-          success: false,
-          status: "integration_not_configured",
-          message: "Google Keep is not connected yet (Phase 3).",
+          success: true,
+          data: sent,
+          message: `Email sent to ${args.to}.`,
         };
+      }
+
+      case "search_gmail": {
+        const found = await searchEmails(userId, args);
+        return {
+          success: true,
+          data: found,
+          message:
+            found.found === 0
+              ? "No emails found."
+              : `Found ${found.found} email(s):\n` +
+                found.results
+                  .map((r) => `• ${r.subject} — ${r.from} (${r.date})`)
+                  .join("\n"),
+        };
+      }
+
+      case "search_google_drive": {
+        const found = await searchDrive(userId, args);
+        return {
+          success: true,
+          data: found,
+          message:
+            found.found === 0
+              ? "No files found."
+              : `Found ${found.found} file(s):\n` +
+                found.files.map((f) => `• ${f.name} — ${f.link}`).join("\n"),
+        };
+      }
+      case "list_drive_files": {
+        const files = await listFiles(userId);
+        return {
+          success: true,
+          data: files,
+          message:
+            files.found === 0
+              ? "Drive is empty."
+              : `Recent files:\n` +
+                files.files.map((f) => `• ${f.name} — ${f.link}`).join("\n"),
+        };
+      }
 
       default:
         return { success: false, error: `Unknown tool: ${name}` };
