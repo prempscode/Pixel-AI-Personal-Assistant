@@ -97,3 +97,62 @@ async function runAgent(message, userId) {
 }
 
 module.exports = runAgent;
+
+/*
+I implemented an AI agent using the Groq API.
+
+First, I imported three things: the Groq client, the tool registry, 
+and the tool executor.
+
+The Groq client is used to communicate with the AI model. 
+The tool registry contains the available tools that the AI can use, 
+and the tool executor is responsible for executing those tools in our backend.
+
+Then I created an asynchronous function called `runAgent`, which accepts 
+the user's message and user ID.
+
+I pass the user ID because our application supports multiple users, and we 
+need to manage each user's tasks separately.
+
+Next, I created a messages array containing two types of messages: 
+a system message and a user message.
+
+The system message contains instructions that define how our 
+AI assistant should behave, such as when to use tools, how to handle 
+errors, and why it should not guess current information.
+
+The user message contains the actual request.
+
+After that, I set a maximum iteration limit of five to prevent the 
+agent from running continuously.
+
+Inside a loop, I send the messages and available tools to the Groq API. 
+I use `tool_choice: auto` so that the AI can decide whether it needs 
+a tool or can answer directly.
+
+After receiving the response, I check whether the AI requested any tools.
+
+If no tool is required, I return the AI's response directly to the user.
+
+If a tool is required, I save the AI's tool-call message and 
+execute the requested tool using our tool executor.
+
+I also use `JSON.parse()` to convert the tool arguments into a 
+JavaScript object and pass the tool name, arguments, and user ID to the executor.
+
+I use try-catch to handle errors during tool execution.
+
+Once the tool is executed, I send its result back to Groq using a
+tool message. This allows the AI to understand whether 
+the operation succeeded or failed.
+
+The loop then continues, allowing the AI to request additional 
+tools if necessary or generate the final response.
+
+Finally, I export the `runAgent` function so that other backend 
+files, such as the chat controller, can use it.
+
+This approach allows our AI assistant to do more than just answer 
+questions. It can also perform actual operations through our backend tools.
+
+*/

@@ -1,6 +1,9 @@
 import { useAuth } from "./context/AuthContext";
 import GoogleLogin from "./components/GoogleLogin";
+import ChatWindow from "./components/ChatWindow";
+import GoogleStatus from "./components/GoogleStatus";
 import { signOut } from "./services/authService";
+import "./index.css";
 
 function App() {
   const { user, loading } = useAuth();
@@ -12,9 +15,14 @@ function App() {
   }
 
   return (
-    <div>
-      <h2>Welcome, {user.email}</h2>
-      <button onClick={signOut}>Logout</button>
+    <div className="app">
+      <header className="topbar">
+        <h1>Pixel</h1>
+        <GoogleStatus />
+        <span>{user.email}</span>
+        <button onClick={signOut}>Logout</button>
+      </header>
+      <ChatWindow />
     </div>
   );
 }
