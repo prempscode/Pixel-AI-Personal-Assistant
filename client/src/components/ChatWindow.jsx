@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { sendMessage } from "../services/api";
+import VoiceInput from "./VoiceInput";
 
 function ChatWindow() {
   const [messages, setMessages] = useState([
@@ -11,6 +12,9 @@ function ChatWindow() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
+  function handleVoiceResult(text) {
+    setInput(text);
+  }
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -60,6 +64,7 @@ function ChatWindow() {
           onChange={(e) => setInput(e.target.value)}
           placeholder="e.g. Remind me to call John tomorrow at 6 PM"
         />
+        <VoiceInput onResult={handleVoiceResult} />
         <button type="submit" disabled={loading}>
           Send
         </button>
