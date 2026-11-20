@@ -1,69 +1,42 @@
 import { cn } from "../../lib/cn";
 
-export function PixelMark({ className, accent = "var(--color-volt)" }) {
+// 3x3 pixel mark; the ember cell is the "action" Pixel takes for you.
+const CELLS = [1, 1, 1, 1, 0, 1, 1, 0, 2];
+
+export function LogoMark({ size = 22, className }) {
+  const cell = size / 3;
   return (
     <svg
-      viewBox="0 0 40 40"
-      fill="none"
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
       aria-hidden="true"
-      className={cn("size-8", className)}
+      className={cn("shrink-0", className)}
     >
-      <rect x="2" y="2" width="15" height="15" rx="3.5" fill="currentColor" />
-      <rect
-        x="23"
-        y="2"
-        width="15"
-        height="15"
-        rx="3.5"
-        fill="currentColor"
-        opacity="0.32"
-      />
-      <rect
-        x="2"
-        y="23"
-        width="15"
-        height="15"
-        rx="3.5"
-        fill="currentColor"
-        opacity="0.32"
-      />
-      <rect x="23" y="23" width="15" height="15" rx="3.5" fill={accent} />
+      {CELLS.map((v, i) =>
+        v ? (
+          <rect
+            key={i}
+            x={(i % 3) * cell + 0.5}
+            y={Math.floor(i / 3) * cell + 0.5}
+            width={cell - 1}
+            height={cell - 1}
+            rx={1}
+            fill={v === 2 ? "var(--color-ember)" : "var(--color-paper)"}
+          />
+        ) : null,
+      )}
     </svg>
   );
 }
 
-function Logo({ className, markClassName, wordmark = true, size = "md" }) {
-  const wordSize =
-    size === "sm"
-      ? "text-[17px]"
-      : size === "lg"
-        ? "text-[24px]"
-        : "text-[20px]";
-
+export default function Logo({ className }) {
   return (
-    <span
-      className={cn("group/logo inline-flex items-center gap-2.5", className)}
-      aria-label="Pixel"
-    >
-      <PixelMark
-        className={cn(
-          "transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover/logo:rotate-6",
-          size === "sm" ? "size-7" : size === "lg" ? "size-9" : "size-8",
-          markClassName,
-        )}
-      />
-      {wordmark && (
-        <span
-          className={cn(
-            "font-sans font-semibold leading-none tracking-[-0.045em]",
-            wordSize,
-          )}
-        >
-          Pixel
-        </span>
-      )}
+    <span className={cn("inline-flex items-center gap-2.5", className)}>
+      <LogoMark />
+      <span className="font-display text-[1.65rem] leading-none tracking-tight">
+        Pixel
+      </span>
     </span>
   );
 }
-
-export default Logo;

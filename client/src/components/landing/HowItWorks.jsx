@@ -1,187 +1,120 @@
-import {
-  ArrowRight,
-  CalendarDays,
-  Check,
-  LockKeyhole,
-  Mail,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
-import GoogleIcon from "../ui/GoogleIcon";
-import Reveal from "../ui/Reveal";
-import { ButtonLink } from "../ui/Button";
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { cn } from "../../lib/cn";
 
-const steps = [
-  {
-    number: "01",
-    title: "Sign in with Google.",
-    copy: "Start with the account you already use. Supabase handles your session — Pixel never sees your password.",
-    visual: (
-      <div className="rounded-xl border border-paper/10 bg-ink/55 p-2.5">
-        <div className="flex items-center gap-2.5 rounded-lg border border-paper/10 bg-paper/[0.035] px-3 py-2.5">
-          <GoogleIcon className="size-4" />
-          <span className="flex-1 text-[10px] font-medium text-paper/62">
-            Continue with Google
-          </span>
-          <span className="rounded-full bg-volt/10 px-2 py-1 text-[8px] font-semibold text-volt">
-            Secure
-          </span>
-        </div>
-      </div>
-    ),
-  },
-  {
-    number: "02",
-    title: "Connect your workspace.",
-    copy: "One consent screen. Only the scopes Pixel needs. Refresh tokens are encrypted before they reach the database.",
-    visual: (
-      <div className="flex flex-wrap gap-1.5">
-        {["Calendar", "Tasks", "Gmail", "Drive"].map((tool) => (
-          <span
-            key={tool}
-            className="inline-flex items-center gap-1.5 rounded-md border border-paper/10 bg-ink/50 px-2.5 py-1.5 text-[9px] font-medium text-paper/45"
-          >
-            <Check className="size-2.5 text-volt" strokeWidth={3} />
-            {tool}
-          </span>
-        ))}
-        <span className="inline-flex items-center gap-1.5 rounded-md border border-paper/10 bg-ink/50 px-2.5 py-1.5 text-[9px] font-medium text-paper/30">
-          <LockKeyhole className="size-2.5" />
-          Encrypted
-        </span>
-      </div>
-    ),
-  },
-  {
-    number: "03",
-    title: "Say it plainly.",
-    copy: "No commands to learn. Pixel chooses the right tool, performs the action and reports exactly what changed.",
-    visual: (
-      <div className="space-y-1.5">
-        <div className="ml-auto w-fit max-w-[92%] rounded-lg rounded-br-sm bg-paper/[0.08] px-3 py-2 text-[9.5px] leading-4 text-paper/62">
-          Block Friday 2–3 for the design review.
-        </div>
-        <div className="flex w-fit max-w-[94%] items-start gap-2 rounded-lg rounded-bl-sm border border-volt/15 bg-volt/[0.055] px-3 py-2">
-          <span className="mt-0.5 flex size-3.5 shrink-0 items-center justify-center rounded-full bg-volt text-ink">
-            <Check className="size-2" strokeWidth={3} />
-          </span>
-          <span className="text-[9.5px] leading-4 text-paper/58">
-            Added to your calendar for Friday, 2:00–3:00 PM.
-          </span>
-        </div>
-      </div>
-    ),
-  },
-];
+gsap.registerPlugin(ScrollTrigger);
 
-const assurances = [
-  { icon: ShieldCheck, label: "No new password" },
-  { icon: LockKeyhole, label: "No surprise sends" },
-  { icon: Sparkles, label: "No prompt syntax" },
+const STEPS = [
+  { n: "01", title: "You ask", body: "Type it or say it, in plain language. No syntax, no forms." },
+  { n: "02", title: "Pixel picks the tool", body: "It chooses the right Google action for the request: a task, an event, a draft or a search." },
+  { n: "03", title: "It runs as you", body: "The action runs with your connected Google account, server-side. Your token never reaches the browser." },
+  { n: "04", title: "You get the truth", body: "Pixel reports what actually happened, including errors. It never claims success without proof." },
 ];
 
 export default function HowItWorks() {
+  const root = useRef(null);
+
+  useEffect(() => {
+    const mm = gsap.matchMedia();
+    // Pinned, scrubbed sequence only on desktop with motion allowed.
+    // Everywhere else the content is simply stacked and fully visible.
+    mm.add("(min-width: 1024px) and (prefers-reduced-motion: no-preference)", () => {
+      const q = gsap.utils.selector(root.current);
+      const steps = q("[data-step]");
+      const layers = q("[data-layer]");
+
+      gsap.set(steps, { opacity: 0.3 });
+      gsap.set(layers, { opacity: 0, y: 18 });
+      gsap.set(q("[data-bar]"), { scaleX: 0 });
+
+      const tl = gsap.timeline({
+        defaults: { ease: "power2.out" },
+        scrollTrigger: {
+          trigger: root.current,
+          start: "top top",
+          end: "+=260%",
+          pin: true,
+          scrub: 0.6,
+          anticipatePin: 1,
+        },
+      });
+
+      // each step: highlight its row + reveal its layer in the card
+      [0, 1, 2, 3].forEach((i) => {
+        const at = i * 1;
+        tl.to(steps[i], { opacity: 1, duration: 0.4 }, at);
+        if (i > 0) tl.to(steps[i - 1], { opacity: 0.3, duration: 0.4 }, at);
+        tl.to(layers[i], { opacity: 1, y: 0, duration: 0.5 }, at);
+        if (i === 2) tl.to(q("[data-bar]"), { scaleX: 1, duration: 0.8, ease: "none" }, at);
+      });
+      tl.to({}, { duration: 0.6 }); // hold on the final state
+
+      return () => tl.scrollTrigger?.kill();
+    });
+    return () => mm.revert();
+  }, []);
+
   return (
-    <section
-      id="how-it-works"
-      className="relative overflow-hidden border-b border-paper/10 py-24 sm:py-28 lg:py-36"
-    >
-      <div className="pointer-events-none absolute top-1/3 left-[-10%] size-[430px] rounded-full bg-sky/[0.035] blur-[120px]" />
-      <div className="container-pixel relative">
-        <div className="grid gap-14 lg:grid-cols-[0.82fr_1.18fr] lg:gap-24">
-          <div className="self-start lg:sticky lg:top-32">
-            <Reveal>
-              <span className="eyebrow">The flow</span>
-              <h2 className="mt-6 max-w-[470px] text-[clamp(2.7rem,5vw,4.7rem)] font-semibold leading-[0.97] tracking-[-0.055em]">
-                Three steps.
-                <br />
-                <span className="display text-volt italic">
-                  Then it’s conversation.
-                </span>
-              </h2>
-              <p className="mt-6 max-w-[400px] text-[13px] leading-6 text-paper/55">
-                Pixel doesn’t ask you to learn a new workflow. It joins the one
-                you already have — and quietly takes the repetitive parts off
-                your hands.
-              </p>
-            </Reveal>
-
-            <Reveal delay={0.1} className="mt-9 space-y-3">
-              {assurances.map(({ icon: Icon, label }) => (
-                <div
-                  key={label}
-                  className="flex items-center gap-2.5 text-[11px] font-medium text-paper/48"
-                >
-                  <span className="flex size-6 items-center justify-center rounded-md border border-paper/10 bg-paper/[0.025] text-volt/80">
-                    <Icon className="size-3" strokeWidth={1.8} />
-                  </span>
-                  {label}
+    <section id="how" ref={root} className="relative scroll-mt-16 overflow-hidden border-y border-line bg-ink-900/60">
+      <div className="mx-auto grid min-h-[100svh] max-w-7xl items-center gap-14 px-5 py-24 sm:px-8 lg:grid-cols-[1fr_1.05fr] lg:py-0">
+        <div>
+          <p className="eyebrow">How it works</p>
+          <h2 className="display mt-5 text-5xl sm:text-7xl">
+            From sentence to <em className="text-muted">done</em>.
+          </h2>
+          <ol className="mt-12 space-y-7">
+            {STEPS.map((s) => (
+              <li key={s.n} data-step className="flex gap-5">
+                <span className="font-mono text-sm text-ember">{s.n}</span>
+                <div>
+                  <h3 className="text-lg font-medium tracking-tight">{s.title}</h3>
+                  <p className="mt-1 max-w-md text-[0.95rem] leading-relaxed text-muted">{s.body}</p>
                 </div>
-              ))}
-            </Reveal>
+              </li>
+            ))}
+          </ol>
+        </div>
 
-            <Reveal delay={0.16} className="mt-10 hidden lg:block">
-              <ButtonLink href="#capabilities" variant="outline" size="sm">
-                Explore the actions
-                <ArrowRight className="size-3.5" />
-              </ButtonLink>
-            </Reveal>
-          </div>
-
-          <div className="relative">
-            <div className="absolute top-6 bottom-6 left-[19px] w-px bg-gradient-to-b from-volt/40 via-paper/12 to-transparent" />
-            <div className="space-y-3">
-              {steps.map((step, index) => (
-                <Reveal
-                  key={step.number}
-                  delay={index * 0.07}
-                  className="relative pl-12 sm:pl-16"
-                >
-                  <span className="absolute top-5 left-0 flex size-10 items-center justify-center rounded-full border border-paper/12 bg-ink text-[9px] font-semibold text-paper/40">
-                    {step.number}
-                  </span>
-                  <div className="group rounded-[22px] border border-paper/10 bg-ink-card/70 p-5 transition-colors duration-500 hover:border-paper/20 sm:p-6">
-                    <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="max-w-[330px]">
-                        <h3 className="text-[17px] font-semibold tracking-[-0.03em] text-paper/82">
-                          {step.title}
-                        </h3>
-                        <p className="mt-2 text-[11.5px] leading-[1.4rem] text-paper/50">
-                          {step.copy}
-                        </p>
-                      </div>
-                      <div className="w-full shrink-0 sm:max-w-[220px]">
-                        {step.visual}
-                      </div>
-                    </div>
-                  </div>
-                </Reveal>
-              ))}
+        {/* Illustrative walk-through of one request */}
+        <div className="relative">
+          <div className="rounded-3xl border border-line-strong bg-ink-850 p-5 shadow-[0_40px_120px_-30px_rgb(0_0_0/0.8)] sm:p-7">
+            <div className="flex items-center justify-between">
+              <span className="eyebrow">Example request</span>
+              <span className="flex gap-1.5" aria-hidden="true">
+                <i className="size-2 rounded-full bg-ink-700" />
+                <i className="size-2 rounded-full bg-ink-700" />
+                <i className="size-2 rounded-full bg-ember" />
+              </span>
             </div>
 
-            <Reveal
-              delay={0.1}
-              className="mt-3 flex flex-col gap-3 rounded-[22px] border border-paper/10 bg-paper/[0.025] p-5 sm:ml-16 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="flex -space-x-1.5">
-                  {[CalendarDays, Mail, Check].map((Icon, index) => (
-                    <span
-                      key={index}
-                      className="flex size-6 items-center justify-center rounded-full border border-ink bg-ink-elevated text-paper/45"
-                    >
-                      <Icon className="size-3" />
-                    </span>
-                  ))}
-                </div>
-                <p className="text-[10px] text-paper/34">
-                  Your data stays in your Google account.
-                </p>
+            <div className="mt-6 space-y-4">
+              <div data-layer className="ml-auto max-w-[88%] rounded-2xl rounded-br-md bg-paper px-4 py-3 text-[0.95rem] text-ink-950">
+                Block 2 to 3 PM on Friday for a project review
               </div>
-              <span className="text-[9px] font-semibold tracking-[0.1em] text-volt/65 uppercase">
-                You’re in control
-              </span>
-            </Reveal>
+
+              <div data-layer className="flex items-center gap-3 rounded-xl border border-line bg-ink-900 px-4 py-3">
+                <span className="size-2 rounded-full bg-svc-calendar" />
+                <code className="font-mono text-[0.8rem] text-paper/90">create_calendar_event</code>
+                <span className="ml-auto font-mono text-[0.7rem] uppercase tracking-wider text-dim">tool</span>
+              </div>
+
+              <div data-layer>
+                <div className="flex items-center justify-between font-mono text-[0.7rem] uppercase tracking-wider text-dim">
+                  <span>Running with your Google account</span>
+                </div>
+                <div className="mt-2 h-1 overflow-hidden rounded-full bg-ink-700">
+                  <div data-bar className="h-full origin-left rounded-full bg-ember" />
+                </div>
+              </div>
+
+              <div data-layer className="max-w-[92%] rounded-2xl rounded-bl-md border border-line bg-ink-900 px-4 py-3 text-[0.95rem] leading-relaxed text-paper">
+                Done. "Project review" is on your calendar for Friday, 2:00 to 3:00 PM.
+              </div>
+            </div>
+            <p className={cn("mt-6 font-mono text-[0.68rem] uppercase tracking-[0.12em] text-dim")}>
+              Illustration of the flow, not live data
+            </p>
           </div>
         </div>
       </div>

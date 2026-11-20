@@ -1,3 +1,1 @@
-export function cn(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
+export const cn = (...parts) => parts.filter(Boolean).join(" ");

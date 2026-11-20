@@ -1,124 +1,82 @@
-import { isSafeUrl } from "../lib/constants";
-import { getAccessToken } from "./authService";
+import { supabase } from "../lib/supabaseClient";
 
-const configuredBase = import.meta.env.VITE_BACKEND_URL?.trim();
-export const API_BASE_URL = (configuredBase || "http://localhost:5000").replace(
-  /\/+$/,
-  "",
-);
+const BASE = import.meta.env.VITE_BACKEND_URL;
 
+/**
+ * kind: "auth" | "rate_limit" | "validation" | "network" | "server"
+ * Lets the UI show the right state instead of one generic error.
+ */
 export class ApiError extends Error {
-  constructor(message, { status = 0, retryAfter = null, cause } = {}) {
-    super(message, { cause });
+  constructor(message, kind, status) {
+    super(message);
     this.name = "ApiError";
+    this.kind = kind;
     this.status = status;
-    this.retryAfter = retryAfter;
   }
 }
 
-async function readJson(response) {
-  const text = await response.text();
-  if (!text) return {};
-  try {
-    return JSON.parse(text);
-  } catch {
-    return { error: text };
-  }
+async function getAccessToken() {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token;
 }
 
-async function request(path, { method = "GET", body, signal } = {}) {
-  let token;
-  try {
-    token = await getAccessToken();
-  } catch (error) {
-    throw new ApiError("Your session could not be verified. Please sign in again.", {
-      status: 401,
-      cause: error,
-    });
-  }
-
-  if (!token) {
-    throw new ApiError("Your session has expired. Please sign in again.", {
-      status: 401,
-    });
-  }
-
+async function request(path, options = {}) {
+  const token = await getAccessToken();
   let response;
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, {
-      method,
-      signal,
-      credentials: "include",
+    response = await fetch(`${BASE}${path}`, {
+      ...options,
       headers: {
-        Accept: "application/json",
+        ...(options.body ? { "Content-Type": "application/json" } : {}),
         Authorization: `Bearer ${token}`,
-        ...(body ? { "Content-Type": "application/json" } : {}),
+        ...options.headers,
       },
-      ...(body ? { body: JSON.stringify(body) } : {}),
     });
-  } catch (error) {
-    if (error?.name === "AbortError") throw error;
+  } catch {
     throw new ApiError(
-      "Pixel can't reach the server right now. Check that the API is running and try again.",
-      { status: 0, cause: error },
+      "Can't reach the Pixel server. Check your connection and try again.",
+      "network",
     );
   }
 
-  const data = await readJson(response);
-
-  if (!response.ok) {
-    const retryAfterHeader = response.headers.get("retry-after");
-    const retryAfter = retryAfterHeader
-      ? Number(retryAfterHeader)
-      : null;
-    const message =
-      data?.error ||
-      (response.status === 429
-        ? "You've made a lot of requests. Give Pixel a minute and try again."
-        : "Pixel couldn't complete that request. Please try again.");
-    throw new ApiError(message, {
-      status: response.status,
-      retryAfter: Number.isFinite(retryAfter) ? retryAfter : null,
-    });
+  let data = null;
+  try {
+    data = await response.json();
+  } catch {
+    /* non-JSON body */
   }
 
+  if (!response.ok) {
+    const message = data?.error || "Something went wrong.";
+    const kind =
+      response.status === 401
+        ? "auth"
+        : response.status === 429
+          ? "rate_limit"
+          : response.status === 400
+            ? "validation"
+            : "server";
+    throw new ApiError(message, kind, response.status);
+  }
   return data;
 }
 
-export async function sendMessage(message) {
-  if (typeof message !== "string" || !message.trim()) {
-    throw new ApiError("Write a message before sending.");
-  }
-
-  if (message.length > 4000) {
-    throw new ApiError("That message is too long. Keep it under 4,000 characters.");
-  }
-
-  const data = await request("/api/agent/chat", {
+/** POST /api/agent/chat -> { type: "text", reply: string, urls: string[] } */
+export function sendMessage(message) {
+  return request("/api/agent/chat", {
     method: "POST",
-    body: { message },
+    body: JSON.stringify({ message }),
   });
-
-  if (typeof data?.reply !== "string") {
-    throw new ApiError("Pixel returned an unexpected response. Please try again.");
-  }
-
-  return {
-    type: data.type || "text",
-    reply: data.reply,
-    urls: Array.isArray(data.urls) ? data.urls.filter(isSafeUrl) : [],
-  };
 }
 
+/** GET /api/google/status -> boolean */
 export async function getGoogleStatus() {
   const data = await request("/api/google/status");
   return Boolean(data?.connected);
 }
 
-export async function getGoogleAuthUrl() {
-  const data = await request("/api/google/auth");
-  if (!data?.url || !isSafeUrl(data.url)) {
-    throw new ApiError("Google connection is unavailable right now.");
-  }
-  return data.url;
+/** GET /api/google/auth -> redirects the browser to Google's consent screen. */
+export async function startGoogleConnect() {
+  const { url } = await request("/api/google/auth");
+  window.location.href = url;
 }

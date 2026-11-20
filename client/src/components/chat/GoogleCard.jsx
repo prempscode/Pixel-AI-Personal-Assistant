@@ -1,0 +1,57 @@
+import Button, { GoogleG } from "../ui/Button";
+import { cn } from "../../lib/cn";
+
+/** Connection state for the user's Google account (GET /api/google/status). */
+export default function GoogleCard({ google, compact = false }) {
+  const { status, connect, connecting, connectError, refresh } = google;
+
+  if (status === "loading") {
+    return (
+      <div className="rounded-2xl border border-line bg-ink-850 p-3.5" aria-busy="true">
+        <div className="h-3 w-24 animate-shimmer rounded bg-[linear-gradient(90deg,var(--color-ink-700),var(--color-ink-800),var(--color-ink-700))] bg-[length:200%_100%]" />
+        <div className="mt-2.5 h-3 w-36 animate-shimmer rounded bg-[linear-gradient(90deg,var(--color-ink-700),var(--color-ink-800),var(--color-ink-700))] bg-[length:200%_100%]" />
+      </div>
+    );
+  }
+
+  if (status === "connected") {
+    return (
+      <div className="flex items-center gap-3 rounded-2xl border border-line bg-ink-850 p-3.5">
+        <span className="relative grid size-2.5 place-items-center" aria-hidden="true">
+          <span className="absolute size-2.5 rounded-full bg-ok/40" />
+          <span className="size-1.5 rounded-full bg-ok" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-sm font-medium">Google connected</p>
+          {!compact && <p className="text-[0.75rem] text-muted">Tasks, Calendar, Gmail, Drive</p>}
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "error") {
+    return (
+      <div role="alert" className="rounded-2xl border border-danger/30 bg-danger/[0.06] p-3.5">
+        <p className="text-sm font-medium text-danger">Couldn't check Google</p>
+        <p className="mt-0.5 text-[0.75rem] text-muted">The server didn't respond.</p>
+        <Button size="sm" variant="outline" className="mt-3" onClick={refresh}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn("rounded-2xl border border-ember/30 bg-ember/[0.06] p-3.5")}>
+      <p className="text-sm font-medium">Connect your Google account</p>
+      <p className="mt-0.5 text-[0.78rem] leading-snug text-muted">
+        Pixel needs access before it can use Tasks, Calendar, Gmail and Drive.
+      </p>
+      <Button size="sm" variant="ember" className="mt-3" onClick={connect} loading={connecting}>
+        {!connecting && <GoogleG />}
+        Connect Google
+      </Button>
+      {connectError && <p role="alert" className="mt-2 text-[0.75rem] text-danger">{connectError}</p>}
+    </div>
+  );
+}

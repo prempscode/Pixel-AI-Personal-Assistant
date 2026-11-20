@@ -1,239 +1,142 @@
-import { useEffect, useRef } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  ArrowUpRight,
-  CalendarDays,
-  CheckSquare2,
-  FolderSearch,
-  Home,
-  Loader2,
-  LogOut,
-  Mail,
-  Plus,
-  X,
-} from "lucide-react";
-import { Link } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { getFirstName, STARTER_PROMPTS } from "../../lib/constants";
-import { cn } from "../../lib/cn";
+import { useState } from "react";
 import Logo from "../ui/Logo";
-import ThemeToggle from "../ui/ThemeToggle";
-import GoogleConnectionCard from "./GoogleConnectionCard";
-import UserAvatar from "./UserAvatar";
+import GoogleCard from "./GoogleCard";
+import { PROMPT_GROUPS } from "./prompts";
+import { cn } from "../../lib/cn";
 
-const promptIcons = {
-  Calendar: CalendarDays,
-  Tasks: CheckSquare2,
-  Gmail: Mail,
-  Drive: FolderSearch,
-};
+const clip = (s, n = 46) => (s.length > n ? `${s.slice(0, n).trimEnd()}…` : s);
 
-export default function Sidebar({
-  user,
-  open,
-  onClose,
-  onNewChat,
-  onPickPrompt,
-  google,
-  onConnectGoogle,
-  onRetryGoogle,
-  isSending,
-}) {
-  const { signOut, action } = useAuth();
-  const closeRef = useRef(null);
-  const signingOut = action === "signout";
-  const displayName =
-    user?.user_metadata?.full_name || getFirstName(user) || user?.email;
+function Section({ title, children }) {
+  return (
+    <section className="px-4 py-4">
+      <h2 className="eyebrow mb-3 px-1">{title}</h2>
+      {children}
+    </section>
+  );
+}
 
-  useEffect(() => {
-    if (!open) return undefined;
-    closeRef.current?.focus();
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    const onKeyDown = (event) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKeyDown);
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open, onClose]);
+export default function Sidebar({ user, google, messages, onPick, onJump, onClear, onSignOut, onClose }) {
+  const [confirmClear, setConfirmClear] = useState(false);
+  const userMessages = messages.filter((m) => m.role === "user");
+  const meta = user.user_metadata || {};
+  const name = meta.full_name || meta.name || user.email;
+  const avatar = meta.avatar_url || meta.picture;
 
   return (
-    <>
-      <AnimatePresence>
-        {open && (
-          <motion.button
-            type="button"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            onClick={onClose}
-            aria-label="Dismiss sidebar overlay"
-            className="fixed inset-0 z-[65] bg-ink/45 backdrop-blur-[2px] lg:hidden"
-          />
-        )}
-      </AnimatePresence>
-
-      <aside
-        id="chat-sidebar"
-        aria-label="Chat sidebar"
-        className={cn(
-          "chat-sidebar fixed inset-y-0 left-0 z-[70] flex w-[286px] shrink-0 flex-col border-r border-paper/10 bg-ink text-paper transition-[transform,visibility] duration-500 ease-[var(--ease-out-expo)] lg:static lg:z-auto lg:visible lg:translate-x-0",
-          open ? "visible translate-x-0" : "invisible -translate-x-full",
-        )}
-      >
-        <div className="pointer-events-none absolute top-0 left-0 h-64 w-full bg-[radial-gradient(ellipse_at_top_left,rgba(215,255,62,0.06),transparent_65%)]" />
-
-        <div className="relative flex h-[72px] shrink-0 items-center justify-between px-4">
-          <Link
-            to="/"
-            aria-label="Pixel home"
-            className="rounded-md"
-            onClick={onClose}
-          >
-            <Logo size="sm" />
-          </Link>
-          <button
-            ref={closeRef}
-            type="button"
-            onClick={onClose}
-            aria-label="Close sidebar"
-            className="flex size-8 items-center justify-center rounded-full text-paper/45 transition hover:bg-paper/[0.06] hover:text-paper lg:hidden"
-          >
-            <X className="size-4" />
+    <div className="flex h-full w-[300px] max-w-full flex-col border-r border-line bg-ink-900">
+      <div className="flex h-16 shrink-0 items-center justify-between px-5">
+        <Logo />
+        {onClose && (
+          <button onClick={onClose} aria-label="Close sidebar" className="-mr-2 rounded-lg p-2 text-muted hover:bg-white/5 hover:text-paper">
+            <svg viewBox="0 0 16 16" width="16" height="16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" fill="none"><path d="M4 4l8 8M12 4l-8 8" /></svg>
           </button>
-          <span className="hidden text-[8px] font-semibold tracking-[0.16em] text-paper/32 uppercase lg:block">
-            Workspace
-          </span>
+        )}
+      </div>
+
+      <nav aria-label="Sidebar" className="scroll-thin min-h-0 flex-1 overflow-y-auto">
+        <div className="px-4 pt-1">
+          <GoogleCard google={google} />
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 dark-scrollbar">
-          <button
-            type="button"
-            onClick={onNewChat}
-            disabled={isSending}
-            title={
-              isSending
-                ? "Wait for Pixel to finish this request"
-                : "Clears this chat screen"
-            }
-            className="group flex h-10 w-full shrink-0 items-center gap-2 rounded-xl bg-volt px-3.5 text-[11.5px] font-semibold text-ink transition hover:bg-volt-bright disabled:pointer-events-none disabled:opacity-45"
-          >
-            <Plus
-              className="size-3.5 transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:rotate-90"
-              strokeWidth={2.4}
-            />
-            New chat
-          </button>
+        <Section title="Try asking">
+          <div className="space-y-4">
+            {PROMPT_GROUPS.map((g) => (
+              <div key={g.id}>
+                <p className="mb-1.5 flex items-center gap-2 px-1 text-[0.78rem] font-medium text-muted">
+                  <span className={cn("size-1.5 rounded-full", g.dot)} />
+                  {g.label}
+                </p>
+                <ul className="space-y-0.5">
+                  {g.prompts.map((p) => (
+                    <li key={p}>
+                      <button
+                        onClick={() => onPick(p)}
+                        title={p}
+                        className="w-full rounded-lg px-2.5 py-2 text-left text-[0.84rem] leading-snug text-paper/85 transition-colors hover:bg-white/5 hover:text-paper"
+                      >
+                        {clip(p, 64)}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </Section>
 
-          <div className="mt-6">
-            <div className="flex items-center justify-between px-1">
-              <p className="text-[8.5px] font-bold tracking-[0.16em] text-paper/34 uppercase">
-                Try asking
-              </p>
-              <span className="text-[8px] text-paper/28">4 shortcuts</span>
-            </div>
-            <div className="mt-2 space-y-0.5">
-              {STARTER_PROMPTS.map((prompt) => {
-                const Icon = promptIcons[prompt.kind] || Plus;
-                return (
-                  <button
-                    key={prompt.id}
-                    type="button"
-                    onClick={() => onPickPrompt(prompt.prompt)}
-                    className="group flex w-full items-start gap-2.5 rounded-xl px-2.5 py-2.5 text-left transition duration-200 hover:bg-paper/[0.055]"
-                  >
-                    <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md border border-paper/10 bg-paper/[0.025] text-paper/35 transition group-hover:border-paper/20 group-hover:text-volt/75">
-                      <Icon className="size-3" strokeWidth={1.8} />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-[10.5px] font-semibold text-paper/58 transition group-hover:text-paper/82">
-                        {prompt.title}
-                      </span>
-                      <span className="mt-0.5 line-clamp-1 block text-[8.5px] text-paper/34">
-                        {prompt.prompt}
-                      </span>
-                    </span>
-                    <ArrowUpRight className="mt-1 size-2.5 shrink-0 text-paper/12 transition-[color,transform] duration-300 ease-[var(--ease-out-expo)] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-paper/35" />
-                  </button>
-                );
-              })}
-            </div>
-            <p className="mt-2 px-2.5 text-[8px] leading-[0.85rem] text-paper/30">
-              Pick one to add it to the composer. Nothing sends until you do.
+        <Section title="This conversation">
+          {userMessages.length === 0 ? (
+            <p className="px-1 text-[0.82rem] leading-relaxed text-dim">
+              Your requests will appear here so you can jump back to them.
             </p>
-          </div>
+          ) : (
+            <ol className="space-y-0.5">
+              {userMessages.map((m, i) => (
+                <li key={m.id}>
+                  <button
+                    onClick={() => onJump(m.id)}
+                    title={m.text}
+                    className="flex w-full items-baseline gap-2.5 rounded-lg px-2.5 py-2 text-left text-[0.84rem] leading-snug text-paper/85 transition-colors hover:bg-white/5 hover:text-paper"
+                  >
+                    <span className="font-mono text-[0.68rem] text-dim">{String(i + 1).padStart(2, "0")}</span>
+                    <span className="min-w-0 flex-1 truncate">{clip(m.text)}</span>
+                  </button>
+                </li>
+              ))}
+            </ol>
+          )}
+        </Section>
+      </nav>
 
-          <div className="mt-6">
-            <div className="mb-2 flex items-center justify-between px-1">
-              <p className="text-[8.5px] font-bold tracking-[0.16em] text-paper/34 uppercase">
-                Connection
-              </p>
-              <span className="size-1 rounded-[1px] bg-volt/45" />
+      <div className="shrink-0 border-t border-line p-4">
+        {confirmClear ? (
+          <div role="alertdialog" aria-label="Clear transcript" className="rounded-2xl border border-line-strong bg-ink-850 p-3.5">
+            <p className="text-sm font-medium">Clear this device's transcript?</p>
+            <p className="mt-1 text-[0.75rem] leading-snug text-muted">
+              This only clears what's shown here. Pixel still remembers your recent conversation on the server.
+            </p>
+            <div className="mt-3 flex gap-2">
+              <button
+                onClick={() => { onClear(); setConfirmClear(false); }}
+                className="rounded-full bg-paper px-3.5 py-1.5 text-[0.8rem] font-medium text-ink-950 hover:bg-white"
+              >
+                Clear
+              </button>
+              <button onClick={() => setConfirmClear(false)} className="rounded-full px-3.5 py-1.5 text-[0.8rem] text-muted hover:text-paper">
+                Keep
+              </button>
             </div>
-            <GoogleConnectionCard
-              status={google.status}
-              error={google.error}
-              connecting={google.connecting}
-              onConnect={onConnectGoogle}
-              onRetry={onRetryGoogle}
-            />
           </div>
-
-          <div className="mt-5 mb-3 border-t border-paper/10 pt-3">
-            <Link
-              to="/"
-              className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-[9px] font-medium text-paper/38 transition hover:bg-paper/[0.045] hover:text-paper/65"
-            >
-              <Home className="size-3" />
-              Back to the site
-              <ArrowUpRight className="ml-auto size-2.5 text-paper/15" />
-            </Link>
-          </div>
-        </div>
-
-        <div className="shrink-0 border-t border-paper/10 p-3">
-          <div className="flex items-center gap-2.5 rounded-xl p-1.5">
-            <UserAvatar user={user} className="size-8" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[10.5px] font-semibold text-paper/68">
-                {displayName}
-              </p>
-              <p className="mt-0.5 truncate text-[8.5px] text-paper/35">
-                {user?.email}
-              </p>
-            </div>
-            <ThemeToggle
-              size="sm"
-              className="border-paper/10 text-paper/40 hover:border-paper/20 hover:bg-paper/[0.06] hover:text-paper"
-            />
-            <button
-              type="button"
-              onClick={signOut}
-              disabled={signingOut}
-              aria-label="Sign out"
-              title="Sign out"
-              className="flex size-8 items-center justify-center rounded-lg text-paper/28 transition hover:bg-paper/[0.06] hover:text-paper/65 disabled:opacity-40"
-            >
-              {signingOut ? (
-                <Loader2 className="size-3.5 animate-spin" />
+        ) : (
+          <>
+            <div className="flex items-center gap-3">
+              {avatar ? (
+                <img src={avatar} alt="" referrerPolicy="no-referrer" className="size-9 shrink-0 rounded-full object-cover" />
               ) : (
-                <LogOut className="size-3.5" />
+                <span className="grid size-9 shrink-0 place-items-center rounded-full bg-ink-700 text-sm font-medium uppercase">
+                  {(name || "?").slice(0, 1)}
+                </span>
               )}
-            </button>
-          </div>
-          <p className="mt-2 flex items-center gap-1.5 px-1.5 text-[8px] text-paper/26">
-            <span className="size-1 rounded-[1px] bg-volt/35" />
-            Private by design · Pixel 1.0
-          </p>
-        </div>
-      </aside>
-    </>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{name}</p>
+                {name !== user.email && <p className="truncate text-[0.72rem] text-dim">{user.email}</p>}
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-1">
+              <button onClick={onSignOut} className="rounded-lg px-2.5 py-1.5 text-[0.8rem] text-muted transition-colors hover:bg-white/5 hover:text-paper">
+                Sign out
+              </button>
+              <button
+                onClick={() => setConfirmClear(true)}
+                disabled={messages.length === 0}
+                className="rounded-lg px-2.5 py-1.5 text-[0.8rem] text-muted transition-colors hover:bg-white/5 hover:text-paper disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-muted"
+              >
+                Clear transcript
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
