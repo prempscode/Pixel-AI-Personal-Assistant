@@ -1,4 +1,5 @@
 const express = require("express");
+const rateLimit = require("express-rate-limit");
 const runAgent = require("../agent/agent");
 const authMiddleware = require("../middleware/authMiddleware");
 
@@ -6,7 +7,18 @@ const router = express.Router();
 
 router.use(authMiddleware);
 
-router.post("/chat", async (req, res) => {
+// Each chat request can trigger up to 5 Groq calls, so limit per USER
+// (this runs after authMiddleware, so req.user is available).
+const chatLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 60,
+  keyGenerator: (req) => req.user.id,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: { error: "Too many requests. Please slow down and try again soon." },
+});
+
+router.post("/chat", chatLimiter, async (req, res) => {
   try {
     const { message } = req.body;
 

@@ -22,11 +22,15 @@ async function listFiles(userId) {
 }
 
 async function searchDrive(userId, { query }) {
+  if (typeof query !== "string" || !query.trim() || query.length > 200) {
+    throw new Error("A search term (max 200 characters) is required.");
+  }
+
   const auth = await getGoogleClient(userId);
   const drive = google.drive({ version: "v3", auth });
 
-  // Escape single quotes for Drive query syntax
-  const safeQuery = query.replace(/'/g, "\\'");
+  // Escape backslashes FIRST, then single quotes (Drive query syntax)
+  const safeQuery = query.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 
   const res = await drive.files.list({
     q: `name contains '${safeQuery}' or fullText contains '${safeQuery}'`,

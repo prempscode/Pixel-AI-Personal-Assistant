@@ -2,6 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import { sendMessage } from "../services/api";
 import VoiceInput from "./VoiceInput";
 
+// Only http/https links are ever rendered as clickable.
+const isSafeUrl = (url) => /^https?:\/\//i.test(url);
+
 function ChatWindow() {
   const [messages, setMessages] = useState([
     {
@@ -12,6 +15,7 @@ function ChatWindow() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef(null);
+
   function handleVoiceResult(text) {
     setInput(text);
   }
@@ -31,11 +35,16 @@ function ChatWindow() {
 
     try {
       const result = await sendMessage(text);
+      // Links are shown inside the message instead of window.open(), which
+      // browsers block when it runs after an async call.
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", text: result.reply },
+        {
+          role: "assistant",
+          text: result.reply,
+          urls: (result.urls || []).filter(isSafeUrl),
+        },
       ]);
-      result.urls?.forEach((url) => window.open(url, "_blank"));
     } catch (err) {
       setMessages((prev) => [
         ...prev,
@@ -50,8 +59,19 @@ function ChatWindow() {
     <div className="chat">
       <div className="messages">
         {messages.map((m, i) => (
-          <div key={i} className={`msg ${m.role}`}>
+          <div
+            key={i}
+            className={`msg ${m.role}`}
+            style={{ whiteSpace: "pre-wrap" }}
+          >
             {m.text}
+            {m.urls?.map((url) => (
+              <div key={url}>
+                <a href={url} target="_blank" rel="noopener noreferrer">
+                  {url}
+                </a>
+              </div>
+            ))}
           </div>
         ))}
         {loading && <div className="msg assistant">Thinking…</div>}

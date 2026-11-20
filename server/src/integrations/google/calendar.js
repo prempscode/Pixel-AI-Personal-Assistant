@@ -1,6 +1,8 @@
 const { google } = require("googleapis");
 const getGoogleClient = require("./googleClient");
 
+const DEFAULT_TZ = process.env.DEFAULT_TIMEZONE || "Asia/Kolkata";
+
 async function createEvent(userId, { title, start, end }) {
   const auth = await getGoogleClient(userId);
   const calendar = google.calendar({ version: "v3", auth });
@@ -9,8 +11,9 @@ async function createEvent(userId, { title, start, end }) {
     calendarId: "primary",
     requestBody: {
       summary: title,
-      start: { dateTime: start },
-      end: { dateTime: end },
+      // timeZone is used only when the ISO string has no offset
+      start: { dateTime: start, timeZone: DEFAULT_TZ },
+      end: { dateTime: end, timeZone: DEFAULT_TZ },
     },
   });
 

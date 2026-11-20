@@ -1,10 +1,34 @@
+const crypto = require("crypto");
 const getGroqAI = require("../config/groq");
 const tools = require("./toolRegistry");
 const executeTool = require("./toolExecutor");
 const Conversation = require("../models/Conversation");
 
+async function saveConversation(userId, userText, assistantText) {
+  await Conversation.findOneAndUpdate(
+    { userId },
+    {
+      $push: {
+        messages: {
+          $each: [
+            { role: "user", text: userText },
+            { role: "assistant", text: assistantText },
+          ],
+          $slice: -50, // keep last 50 messages only
+        },
+      },
+      $set: { updatedAt: new Date() },
+    },
+    { upsert: true },
+  );
+}
+
 async function runAgent(message, userId) {
   const groq = await getGroqAI();
+
+  // One id per chat request. The executor uses it to make sure an email is
+  // never prepared AND sent in the same turn.
+  const turnId = crypto.randomUUID();
 
   // Load conversation history (last 20 messages for context)
   const convo = await Conversation.findOne({ userId });
@@ -23,18 +47,20 @@ TOOL SELECTION RULES:
 - create_google_task: For to-do items, notes, reminders, and checklist items WITHOUT a specific time slot.
 - create_calendar_event: For anything with a specific start and end time (meetings, appointments, time blocks).
 - create_gmail_draft: When the user wants to compose but NOT send an email.
-- send_gmail: Only when the user explicitly says "send" or "email to...". Otherwise use create_gmail_draft.
+- send_gmail: Only when the user explicitly says "send" or "email to...". It only PREPARES the email and does NOT send it.
+- confirm_send_gmail: Call it ONLY after the user replies "yes" (or similar) in a NEW message to your "Send it?" question. Never call it in the same turn as send_gmail.
 - search_gmail: To find existing emails.
 - list_drive_files: To see recent files.
 - search_google_drive: To find specific files by name or content.
-- open_website / search_google: To open URLs or search the web.
+- open_website / search_google: To give the user a URL or a search link.
 
 CRITICAL RULES:
 1. NEVER claim an action was completed unless a tool confirms success.
-2. If a tool fails, explain the error clearly.
+2. If a tool fails, explain the error clearly. If a tool says reconnect_required, tell the user to click 'Connect Google'.
 3. When the user asks you to create content (write a body, compose text, draft a message), you MUST write that content yourself based on the request. Do NOT ask the user to provide it.
 4. When creating a task with a body/description, write meaningful content yourself.
 5. If multiple actions are requested, execute them in order and report each result separately.
+6. When a tool returns confirmation_required, show the user the full email and ask "Send it?". Do not claim it was sent.
       `,
     },
     ...history.map((m) => ({ role: m.role, content: m.text })),
@@ -62,24 +88,7 @@ CRITICAL RULES:
     // 2. No more tools: save to memory and return the final response.
     if (!assistantMessage.tool_calls?.length) {
       const finalReply = assistantMessage.content || "";
-
-      // Save conversation to MongoDB
-      await Conversation.findOneAndUpdate(
-        { userId },
-        {
-          $push: {
-            messages: {
-              $each: [
-                { role: "user", text: message },
-                { role: "assistant", text: finalReply },
-              ],
-              $slice: -50, // keep last 50 messages only
-            },
-          },
-          $set: { updatedAt: new Date() },
-        },
-        { upsert: true },
-      );
+      await saveConversation(userId, message, finalReply);
 
       return {
         type: "text",
@@ -98,7 +107,7 @@ CRITICAL RULES:
 
       try {
         const args = JSON.parse(toolCall.function.arguments);
-        result = await executeTool(name, args, userId);
+        result = await executeTool(name, args, { userId, turnId });
       } catch (error) {
         result = {
           success: false,
@@ -107,7 +116,7 @@ CRITICAL RULES:
       }
 
       // Collect URLs from open_website / search_google
-      if (result?.data?.url) {
+      if (result?.data?.url && name !== "create_calendar_event") {
         urls.push(result.data.url);
       }
 
@@ -121,11 +130,14 @@ CRITICAL RULES:
     }
   }
 
-  // Max iterations reached
+  // Max iterations reached: still save the turn so history stays consistent.
+  const fallbackReply =
+    "I reached the maximum number of tool operations. Please try a simpler request.";
+  await saveConversation(userId, message, fallbackReply);
+
   return {
     type: "text",
-    reply:
-      "I reached the maximum number of tool operations. Please try a simpler request.",
+    reply: fallbackReply,
     urls,
   };
 }

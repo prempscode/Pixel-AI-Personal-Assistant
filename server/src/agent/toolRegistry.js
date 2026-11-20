@@ -103,7 +103,8 @@ const tools = [
     type: "function",
     function: {
       name: "send_gmail",
-      description: "Send an email from the user's Gmail account immediately.",
+      description:
+        "Prepare an email to send. This does NOT send it: the user must confirm first.",
       parameters: {
         type: "object",
         properties: {
@@ -113,6 +114,15 @@ const tools = [
         },
         required: ["to", "subject", "body"],
       },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "confirm_send_gmail",
+      description:
+        "Send the email prepared by send_gmail. Call it only after the user confirms in a new message.",
+      parameters: { type: "object", properties: {} },
     },
   },
   {
