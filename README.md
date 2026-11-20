@@ -24,7 +24,7 @@ Other features: voice input (browser Web Speech API), per-user conversation memo
 ## How it works
 
 ```
-React (Vite) ──Supabase JWT──▶ Express API ──▶ Groq (llama-3.3-70b, tool calling)
+React (Vite) ──Supabase JWT──▶ Express API ──▶ Groq (openai/gpt-oss-120b, tool calling)
                                    │                      │
                                    │              picks a tool, gets the result,
                                    │              loops (max 5 iterations)
