@@ -4,6 +4,7 @@ jspm_packages/
 venv/
 env/
 ENV/
+supabase/
 
 # Environment variables & secrets
 .env
