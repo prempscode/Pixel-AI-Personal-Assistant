@@ -26,10 +26,6 @@ async function saveConversation(userId, userText, assistantText) {
 async function runAgent(message, userId) {
   const groq = await getGroqAI();
 
-  // One id per chat request. The executor uses it to make sure an email is
-  // never prepared AND sent in the same turn.
-  const turnId = crypto.randomUUID();
-
   // Load conversation history (last 20 messages for context)
   const convo = await Conversation.findOne({ userId });
   const history = (convo?.messages || []).slice(-20);
@@ -48,7 +44,7 @@ TOOL SELECTION RULES:
 - create_calendar_event: For anything with a specific start and end time (meetings, appointments, time blocks).
 - create_gmail_draft: When the user wants to compose but NOT send an email.
 - send_gmail: Only when the user explicitly says "send" or "email to...". It only PREPARES the email and does NOT send it.
-- confirm_send_gmail: Call it ONLY after the user replies "yes" (or similar) in a NEW message to your "Send it?" question. Never call it in the same turn as send_gmail.
+- confirm_send_gmail: After the user replies "yes" (or similar) in a NEW message to your "Send it?" question, send it by calling confirm_send_gmail (no arguments). If you only have the email details, calling send_gmail again with the SAME to, subject and body also sends it. Never do either in the same turn as the first send_gmail.
 - search_gmail: To find existing emails.
 - list_drive_files: To see recent files.
 - search_google_drive: To find specific files by name or content.
@@ -61,6 +57,7 @@ CRITICAL RULES:
 4. When creating a task with a body/description, write meaningful content yourself.
 5. If multiple actions are requested, execute them in order and report each result separately.
 6. When a tool returns confirmation_required, show the user the full email and ask "Send it?". Do not claim it was sent.
+7. Reply in plain text only. Do not use markdown symbols such as ** or # or backticks.
       `,
     },
     ...history.map((m) => ({ role: m.role, content: m.text })),
@@ -107,7 +104,10 @@ CRITICAL RULES:
 
       try {
         const args = JSON.parse(toolCall.function.arguments);
-        result = await executeTool(name, args, { userId, turnId });
+        result = await executeTool(name, args, {
+          userId,
+          userMessage: message,
+        });
       } catch (error) {
         result = {
           success: false,

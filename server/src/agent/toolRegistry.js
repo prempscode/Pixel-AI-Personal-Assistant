@@ -104,7 +104,7 @@ const tools = [
     function: {
       name: "send_gmail",
       description:
-        "Prepare an email to send. This does NOT send it: the user must confirm first.",
+        "Send an email. If the user has not clearly confirmed yet, this returns the email for review and asks them to confirm. If the user confirms (says yes/ok/send), it sends immediately.",
       parameters: {
         type: "object",
         properties: {
@@ -116,15 +116,7 @@ const tools = [
       },
     },
   },
-  {
-    type: "function",
-    function: {
-      name: "confirm_send_gmail",
-      description:
-        "Send the email prepared by send_gmail. Call it only after the user confirms in a new message.",
-      parameters: { type: "object", properties: {} },
-    },
-  },
+
   {
     type: "function",
     function: {

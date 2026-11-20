@@ -90,18 +90,29 @@ function toToolError(error) {
 }
 
 // ---------- email send confirmation ----------
-// send_gmail only PREPARES an email. confirm_send_gmail sends it, and only if
-// the confirmation arrives in a LATER chat turn than the preparation, so the
-// model can never prepare and send in the same turn.
-// NOTE: this Map lives in server memory (resets on restart, single instance).
-// For multiple server instances, store it in MongoDB instead.
+// Track pending confirmation by userId only.
+// When user says yes, send the ORIGINAL stored email — ignore any regenerated content.
 
 const PENDING_TTL_MS = 5 * 60 * 1000;
-const pendingSends = new Map(); // userId -> { email, turnId, expires }
+const pendingSends = new Map(); // userId -> { email, expires }
+
+const AFFIRMATIVE_RE =
+  /^\s*(yes|y|yeah|yep|yup|sure|ok|okay|confirm|confirmed|send|send it|go ahead|do it|please send)\b/i;
+
+const CANCEL_RE =
+  /^\s*(no|n|nope|cancel|stop|don't send|do not send|never mind|dont send)\b/i;
+
+function isAffirmative(userMessage) {
+  return typeof userMessage === "string" && AFFIRMATIVE_RE.test(userMessage);
+}
+
+function isCancellation(userMessage) {
+  return typeof userMessage === "string" && CANCEL_RE.test(userMessage);
+}
 
 // ---------- main ----------
 
-async function executeTool(name, args, { userId, turnId }) {
+async function executeTool(name, args, { userId, userMessage }) {
   if (!args || typeof args !== "object" || Array.isArray(args)) {
     return { success: false, error: "Invalid tool arguments." };
   }
@@ -163,50 +174,48 @@ async function executeTool(name, args, { userId, turnId }) {
       }
 
       case "send_gmail": {
-        validateEmail(args); // fail early, before asking the user to confirm
+        validateEmail(args);
         const email = {
           to: args.to.trim(),
           subject: args.subject,
           body: args.body,
         };
+
+        const pending = pendingSends.get(userId);
+        const now = Date.now();
+
+        // CASE 1: User cancelled
+        if (isCancellation(userMessage)) {
+          pendingSends.delete(userId);
+          return {
+            success: true,
+            message: "Email cancelled. Not sent.",
+          };
+        }
+
+        // CASE 2: Pending email exists AND user said yes → SEND ORIGINAL
+        if (pending && pending.expires > now && isAffirmative(userMessage)) {
+          pendingSends.delete(userId);
+          const sent = await sendEmail(userId, pending.email);
+          return {
+            success: true,
+            data: sent,
+            message: `Email sent to ${pending.email.to}.`,
+          };
+        }
+
+        // CASE 3: No pending, or user hasn't confirmed yet → STORE and ASK
         pendingSends.set(userId, {
           email,
-          turnId,
-          expires: Date.now() + PENDING_TTL_MS,
+          expires: now + PENDING_TTL_MS,
         });
+
         return {
           success: false,
           status: "confirmation_required",
           message:
-            "NOT SENT YET. Show the user exactly this email and ask 'Send it?'. " +
-            "Call confirm_send_gmail only after the user says yes in their next message.\n" +
+            "NOT SENT YET. Show the user exactly this email and ask 'Send it? Reply yes to confirm.'\n" +
             `To: ${email.to}\nSubject: ${email.subject}\n\n${email.body}`,
-        };
-      }
-
-      case "confirm_send_gmail": {
-        const pending = pendingSends.get(userId);
-        if (!pending || pending.expires < Date.now()) {
-          pendingSends.delete(userId);
-          return {
-            success: false,
-            error:
-              "No email is waiting for confirmation (it may have expired).",
-          };
-        }
-        if (pending.turnId === turnId) {
-          return {
-            success: false,
-            error:
-              "The user has not confirmed yet. Ask them, and wait for their reply.",
-          };
-        }
-        pendingSends.delete(userId);
-        const sent = await sendEmail(userId, pending.email);
-        return {
-          success: true,
-          data: sent,
-          message: `Email sent to ${pending.email.to}.`,
         };
       }
 
