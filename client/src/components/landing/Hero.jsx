@@ -1,6 +1,12 @@
 import { lazy, Suspense, useRef } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "motion/react";
 import Button, { ArrowIcon, GoogleG } from "../ui/Button";
+import TextRotate from "../fancy/text/text-rotate";
 
 // three.js + R3F are heavy; load them after first paint.
 const PixelField = lazy(() => import("./PixelField"));
@@ -16,7 +22,11 @@ const line = {
   hidden: { y: "110%" },
   show: (i) => ({
     y: 0,
-    transition: { duration: 1, delay: 0.15 + i * 0.12, ease: [0.16, 1, 0.3, 1] },
+    transition: {
+      duration: 1,
+      delay: 0.15 + i * 0.12,
+      ease: [0.16, 1, 0.3, 1],
+    },
   }),
 };
 const fade = (delay) => ({
@@ -28,7 +38,10 @@ const fade = (delay) => ({
 export default function Hero({ isAuthed, onStart, onOpen, loading }) {
   const ref = useRef(null);
   const reduce = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start start", "end start"],
+  });
   const copyY = useTransform(scrollYProgress, [0, 1], [0, reduce ? 0 : 120]);
   const copyOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
   const fieldY = useTransform(scrollYProgress, [0, 1], [0, reduce ? 0 : -60]);
@@ -39,7 +52,11 @@ export default function Hero({ isAuthed, onStart, onOpen, loading }) {
       ref={ref}
       className="relative isolate flex min-h-[100svh] items-center overflow-hidden"
     >
-      <motion.div style={{ y: fieldY }} className="absolute inset-0 -z-10" aria-hidden="true">
+      <motion.div
+        style={{ y: fieldY }}
+        className="absolute inset-0 -z-10"
+        aria-hidden="true"
+      >
         <Suspense fallback={null}>
           <PixelField eventSource={ref} animated={!reduce} />
         </Suspense>
@@ -65,30 +82,72 @@ export default function Hero({ isAuthed, onStart, onOpen, loading }) {
 
         <h1 className="display mt-7 text-[clamp(3.4rem,10.5vw,9.5rem)]">
           <span className="block overflow-hidden pb-[0.08em]">
-            <motion.span className="block" variants={line} custom={0} initial="hidden" animate="show">
-              Say it once.
+            <motion.span
+              className="block"
+              variants={line}
+              custom={0}
+              initial="hidden"
+              animate="show"
+            >
+              Pixel
             </motion.span>
           </span>
+
           <span className="block overflow-hidden pb-[0.12em]">
-            <motion.span className="block text-muted" variants={line} custom={1} initial="hidden" animate="show">
-              Pixel <em className="text-paper">does it.</em>
+            <motion.span
+              variants={line}
+              custom={1}
+              initial="hidden"
+              animate="show"
+            >
+              <TextRotate
+                texts={[
+                  "turns requests",
+                  "manages tasks",
+                  "organizes time",
+                  "sends emails",
+                  "finds files",
+                  "takes action",
+                  "gets things done",
+                ]}
+                mainClassName="inline-block text-white px-2 sm:px-2 md:px-3 bg-[#ff5941] overflow-hidden py-0.5 sm:py-1 md:py-2 justify-center rounded-lg"
+                staggerFrom={"last"}
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "-120%" }}
+                staggerDuration={0.025}
+                splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
+                transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                rotationInterval={2000}
+              />
+              <em className="text-paper block">with purpose.</em>
             </motion.span>
           </span>
         </h1>
 
-        <motion.p {...fade(0.55)} className="mt-8 max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
-          Type or speak a request in plain language. Pixel adds the to-do, blocks
-          the time, drafts the email or finds the file, then tells you exactly
-          what happened.
+        <motion.p
+          {...fade(0.55)}
+          className="mt-8 max-w-xl text-lg leading-relaxed text-muted sm:text-xl"
+        >
+          Type or speak a request in plain language. Pixel adds the to-do,
+          blocks the time, drafts the email or finds the file, then tells you
+          exactly what happened.
         </motion.p>
-
-        <motion.div {...fade(0.7)} className="mt-10 flex flex-wrap items-center gap-3">
+        <motion.div
+          {...fade(0.7)}
+          className="mt-10 flex flex-wrap items-center gap-3"
+        >
           {isAuthed ? (
             <Button size="lg" variant="ember" onClick={onOpen}>
               Open Pixel <ArrowIcon />
             </Button>
           ) : (
-            <Button size="lg" variant="primary" onClick={onStart} loading={loading}>
+            <Button
+              size="lg"
+              variant="primary"
+              onClick={onStart}
+              loading={loading}
+            >
               {!loading && <GoogleG />}
               Continue with Google
             </Button>
@@ -99,14 +158,16 @@ export default function Hero({ isAuthed, onStart, onOpen, loading }) {
             </Button>
           </a>
         </motion.div>
-
         <motion.ul
           {...fade(0.9)}
           aria-label="Works with"
           className="mt-14 flex flex-wrap items-center gap-x-6 gap-y-3"
         >
           {SERVICES.map((s) => (
-            <li key={s.name} className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-muted">
+            <li
+              key={s.name}
+              className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-muted"
+            >
               <span className={`size-1.5 rounded-full ${s.color}`} />
               {s.name}
             </li>
