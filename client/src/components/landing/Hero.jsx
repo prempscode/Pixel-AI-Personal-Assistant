@@ -6,16 +6,18 @@ import {
   useTransform,
 } from "motion/react";
 import Button, { ArrowIcon, GoogleG } from "../ui/Button";
+import ServiceIcon from "../ui/ServiceIcon";
 import TextRotate from "../fancy/text/text-rotate";
+import { useTheme } from "../../context/ThemeContext";
 
 // three.js + R3F are heavy; load them after first paint.
 const PixelField = lazy(() => import("./PixelField"));
 
 const SERVICES = [
-  { name: "Google Tasks", color: "bg-svc-tasks" },
-  { name: "Calendar", color: "bg-svc-calendar" },
-  { name: "Gmail", color: "bg-svc-gmail" },
-  { name: "Drive", color: "bg-svc-drive" },
+  { name: "Google Tasks", service: "tasks" },
+  { name: "Calendar", service: "calendar" },
+  { name: "Gmail", service: "gmail" },
+  { name: "Drive", service: "drive" },
 ];
 
 const line = {
@@ -37,13 +39,18 @@ const fade = (delay) => ({
 
 export default function Hero({ isAuthed, onStart, onOpen, loading }) {
   const ref = useRef(null);
+  const { isDark } = useTheme();
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
   });
   const copyY = useTransform(scrollYProgress, [0, 1], [0, reduce ? 0 : 120]);
-  const copyOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+  const copyOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.35, 0.9],
+    [1, 1, 0],
+  );
   const fieldY = useTransform(scrollYProgress, [0, 1], [0, reduce ? 0 : -60]);
 
   return (
@@ -58,13 +65,17 @@ export default function Hero({ isAuthed, onStart, onOpen, loading }) {
         aria-hidden="true"
       >
         <Suspense fallback={null}>
-          <PixelField eventSource={ref} animated={!reduce} />
+          <PixelField eventSource={ref} animated={!reduce} isDark={isDark} />
         </Suspense>
       </motion.div>
       {/* keep copy legible over the field */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_30%_45%,rgb(8_8_10/0.9),rgb(8_8_10/0.35)_55%,rgb(8_8_10/0.9))]"
+        className={`absolute inset-0 -z-10 ${
+          isDark
+            ? "bg-[radial-gradient(ellipse_at_30%_45%,rgb(8_8_10/0.9),rgb(8_8_10/0.35)_55%,rgb(8_8_10/0.9))]"
+            : "bg-[radial-gradient(ellipse_at_30%_45%,rgb(247_245_239/0.84),rgb(247_245_239/0.28)_55%,rgb(247_245_239/0.9))]"
+        }`}
       />
       <div
         aria-hidden="true"
@@ -110,7 +121,7 @@ export default function Hero({ isAuthed, onStart, onOpen, loading }) {
                   "takes action",
                   "gets things done",
                 ]}
-                mainClassName="inline-block text-white px-2 sm:px-2 md:px-3 bg-[#ff5941] overflow-hidden py-0.5 sm:py-1 md:py-2 justify-center rounded-lg"
+                mainClassName="inline-block text-white px-2 sm:px-2 md:px-3 bg-[#ff5941] overflow-hidden py-0.5 sm:py-1 md:py-2 justify-center rounded-lg max-[400px]:text-[0.8em]"
                 staggerFrom={"last"}
                 initial={{ y: "100%" }}
                 animate={{ y: 0 }}
@@ -127,6 +138,7 @@ export default function Hero({ isAuthed, onStart, onOpen, loading }) {
 
         <motion.p
           {...fade(0.55)}
+          data-pixel-field-ignore
           className="mt-8 max-w-xl text-lg leading-relaxed text-muted sm:text-xl"
         >
           Type or speak a request in plain language. Pixel adds the to-do,
@@ -135,6 +147,7 @@ export default function Hero({ isAuthed, onStart, onOpen, loading }) {
         </motion.p>
         <motion.div
           {...fade(0.7)}
+          data-pixel-field-ignore
           className="mt-10 flex flex-wrap items-center gap-3"
         >
           {isAuthed ? (
@@ -163,13 +176,13 @@ export default function Hero({ isAuthed, onStart, onOpen, loading }) {
           aria-label="Works with"
           className="mt-14 flex flex-wrap items-center gap-x-6 gap-y-3"
         >
-          {SERVICES.map((s) => (
+          {SERVICES.map(({ name, service }) => (
             <li
-              key={s.name}
+              key={name}
               className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-muted"
             >
-              <span className={`size-1.5 rounded-full ${s.color}`} />
-              {s.name}
+              <ServiceIcon service={service} />
+              {name}
             </li>
           ))}
         </motion.ul>

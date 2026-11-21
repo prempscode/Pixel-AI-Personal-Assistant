@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { signOut } from "../services/authService";
@@ -11,6 +11,7 @@ import Sidebar from "../components/chat/Sidebar";
 import MessageList from "../components/chat/MessageList";
 import Composer from "../components/chat/Composer";
 import GoogleCard from "../components/chat/GoogleCard";
+import ThemeToggle from "../components/ui/ThemeToggle";
 import { cn } from "../lib/cn";
 
 const GOOGLE_RESULTS = {
@@ -27,6 +28,7 @@ export default function Chat() {
   const { user } = useAuth();
   const { push } = useToast();
   const isDesktop = useMediaQuery("(min-width: 1024px)");
+  const reduceMotion = useReducedMotion();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [draft, setDraft] = useState("");
@@ -68,8 +70,23 @@ export default function Chat() {
 
   const jump = useCallback((id) => {
     setDrawerOpen(false);
-    document.getElementById(`msg-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, []);
+    window.requestAnimationFrame(() => {
+      const scroller = scrollerRef.current;
+      const target = document.getElementById(`msg-${id}`);
+      if (!scroller || !target) return;
+
+      const top =
+        scroller.scrollTop +
+        target.getBoundingClientRect().top -
+        scroller.getBoundingClientRect().top -
+        16;
+
+      scroller.scrollTo({
+        top: Math.max(0, top),
+        behavior: reduceMotion ? "auto" : "smooth",
+      });
+    });
+  }, [reduceMotion]);
 
   const firstName = (user.user_metadata?.full_name || user.user_metadata?.name || "").split(" ")[0];
 
@@ -140,12 +157,12 @@ export default function Chat() {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-16 shrink-0 items-center gap-3 border-b border-line px-4 sm:px-6">
+        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-line px-4 sm:px-6">
           <button
             onClick={() => (isDesktop ? setSidebarOpen((o) => !o) : setDrawerOpen(true))}
             aria-label={isDesktop ? (sidebarOpen ? "Collapse sidebar" : "Expand sidebar") : "Open menu"}
             aria-expanded={isDesktop ? sidebarOpen : drawerOpen}
-            className="-ml-1 grid size-10 place-items-center rounded-xl text-muted transition-colors hover:bg-white/5 hover:text-paper"
+            className="-ml-1 grid size-9 place-items-center rounded-xl text-muted transition-colors hover:bg-paper/5 hover:text-paper"
           >
             <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
               <rect x="2.5" y="3.5" width="15" height="13" rx="3" />
@@ -153,23 +170,30 @@ export default function Chat() {
             </svg>
           </button>
           <h1 className="font-display text-2xl leading-none">Pixel</h1>
-          <div className="ml-auto flex items-center gap-2 text-xs text-muted" aria-live="polite">
-            <span
-              className={cn(
-                "size-1.5 rounded-full",
-                google.status === "connected" ? "bg-ok" : google.status === "loading" ? "bg-dim" : "bg-ember",
-              )}
-            />
-            <span className="hidden sm:inline">
-              {google.status === "connected"
-                ? "Google connected"
-                : google.status === "loading"
+          {google.status !== "connected" && (
+            <div className="ml-auto flex items-center gap-2 text-xs text-muted" aria-live="polite">
+              <span
+                className={cn(
+                  "size-1.5 rounded-full",
+                  google.status === "loading" ? "bg-dim" : "bg-ember",
+                )}
+              />
+              <span className="hidden sm:inline">
+                {google.status === "loading"
                   ? "Checking Google…"
                   : google.status === "error"
                     ? "Google status unavailable"
                     : "Google not connected"}
-            </span>
-          </div>
+              </span>
+            </div>
+          )}
+          <ThemeToggle
+            size="sm"
+            className={cn(
+              "border-line text-muted hover:bg-paper/5 hover:text-paper",
+              google.status === "connected" && "ml-auto",
+            )}
+          />
         </header>
 
         <MessageList
@@ -183,8 +207,8 @@ export default function Chat() {
           onCopy={(ok) => !ok && push({ tone: "error", title: "Couldn't copy", body: "Your browser blocked clipboard access." })}
         />
 
-        <div className="shrink-0 px-4 pb-4 pt-2 sm:px-8 sm:pb-6">
-          <div className="mx-auto max-w-3xl space-y-3">
+        <div className="shrink-0 px-4 pb-2 pt-2 sm:px-8 sm:pb-3">
+          <div className="mx-auto w-full max-w-3xl space-y-2">
             {google.status === "disconnected" && !isDesktop && <GoogleCard google={google} compact />}
             <Composer
               value={draft}
@@ -194,6 +218,14 @@ export default function Chat() {
               inputRef={inputRef}
               onVoiceError={(msg) => push({ tone: "error", title: "Voice input", body: msg })}
             />
+            <footer className="flex flex-col items-center justify-between gap-1 pt-1 text-center sm:flex-row sm:gap-3 sm:text-left">
+              <p className="font-mono text-[0.62rem] leading-relaxed text-dim sm:text-[0.66rem]">
+                Enter to send · Shift+Enter for a new line
+              </p>
+              <p className="text-[0.66rem] leading-relaxed text-dim">
+                AI can make mistakes. Please verify important information.
+              </p>
+            </footer>
           </div>
         </div>
       </div>

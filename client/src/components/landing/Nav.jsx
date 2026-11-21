@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, useScroll, useSpring } from "motion/react";
 import Logo from "../ui/Logo";
 import Button, { ArrowIcon } from "../ui/Button";
+import ThemeToggle from "../ui/ThemeToggle";
 import { cn } from "../../lib/cn";
 
 const LINKS = [
@@ -50,15 +51,21 @@ export default function Nav({ isAuthed, onStart, onOpen, loading }) {
             </li>
           ))}
         </ul>
-        {isAuthed ? (
-          <Button size="sm" onClick={onOpen}>
-            Open Pixel <ArrowIcon />
-          </Button>
-        ) : (
-          <Button size="sm" onClick={onStart} loading={loading}>
-            Sign in
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          <ThemeToggle
+            size="sm"
+            className="border-line text-muted hover:bg-paper/5 hover:text-paper"
+          />
+          {isAuthed ? (
+            <Button size="sm" onClick={onOpen}>
+              Open Pixel <ArrowIcon />
+            </Button>
+          ) : (
+            <Button size="sm" onClick={onStart} loading={loading}>
+              Sign in
+            </Button>
+          )}
+        </div>
       </nav>
       <motion.div
         aria-hidden="true"

@@ -15,7 +15,14 @@ const STORAGE_KEY = "pixel-theme";
 function readInitialTheme() {
   if (typeof document === "undefined") return "dark";
   const initial = document.documentElement.dataset.theme;
-  return initial === "light" || initial === "dark" ? initial : "dark";
+  if (initial === "light" || initial === "dark") return initial;
+
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored === "light" || stored === "dark" ? stored : "dark";
+  } catch {
+    return "dark";
+  }
 }
 
 export function ThemeProvider({ children }) {
@@ -52,12 +59,16 @@ export function ThemeProvider({ children }) {
         root.style.setProperty("--theme-origin-y", "0%");
       }
 
+      const applyTheme = () => {
+        root.dataset.theme = next;
+        root.style.colorScheme = next;
+        flushSync(() => setTheme(next));
+      };
+
       if (!reduceMotion && typeof document.startViewTransition === "function") {
-        document.startViewTransition(() => {
-          flushSync(() => setTheme(next));
-        });
+        document.startViewTransition(applyTheme);
       } else {
-        setTheme(next);
+        applyTheme();
       }
     },
     [theme],

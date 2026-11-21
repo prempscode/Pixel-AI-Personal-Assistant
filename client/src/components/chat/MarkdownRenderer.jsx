@@ -129,7 +129,7 @@ function CodeBlockFallback({ code, language }) {
   return (
     <div className="md-code-block">
       <div className="md-code-toolbar">
-        <span className="font-mono text-[9px] font-semibold tracking-[0.08em] text-white/40 uppercase">
+        <span className="font-mono text-[9px] font-semibold tracking-[0.08em] text-paper/40 uppercase">
           {language || "Code"}
         </span>
       </div>

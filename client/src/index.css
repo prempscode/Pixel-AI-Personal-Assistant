@@ -17,12 +17,18 @@
   --color-ink-850: #121216;
   --color-ink-800: #18181d;
   --color-ink-700: #23232a;
+  --color-ink: #08080a;
+  --color-ink-soft: #111116;
   --color-line: rgb(255 255 255 / 0.08);
   --color-line-strong: rgb(255 255 255 / 0.16);
 
   --color-paper: #ece8e1;
   --color-muted: #a09c94;
   --color-dim: #6f6c66;
+  --color-volt: #d7ff3e;
+  --color-volt-bright: #e4ff70;
+  --color-sky: #b8d1ff;
+  --color-coral: #ff9366;
 
   --color-ember: #ff5a2c;
   --color-ember-soft: #ff8a64;
@@ -53,6 +59,37 @@
   }
 }
 
+:root {
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-ink-950: #f7f5ef;
+  --color-ink-900: #fffefa;
+  --color-ink-850: #f1eee7;
+  --color-ink-800: #e9e5dc;
+  --color-ink-700: #dad5cb;
+  --color-ink: #fffefa;
+  --color-ink-soft: #f1eee7;
+  --color-line: rgb(32 29 24 / 0.09);
+  --color-line-strong: rgb(32 29 24 / 0.17);
+  --color-paper: #211f1a;
+  --color-muted: #69655e;
+  --color-dim: #89847a;
+  --color-volt: #647a0c;
+  --color-volt-bright: #526707;
+  --color-ember: #bc3817;
+  --color-ember-soft: #a52e12;
+  --color-ember-deep: #86250e;
+  --color-ok: #28784c;
+  --color-danger: #c33b3b;
+  --color-svc-tasks: #3764a0;
+  --color-svc-calendar: #347b50;
+  --color-svc-gmail: #aa4138;
+  --color-svc-drive: #80620b;
+}
+
 @layer base {
   html {
     background: var(--color-ink-950);
@@ -66,6 +103,8 @@
   body {
     min-height: 100dvh;
     overflow-x: hidden;
+    background: var(--color-ink-950);
+    color: var(--color-paper);
   }
   ::selection {
     background: var(--color-ember);
@@ -86,6 +125,23 @@
       transition-duration: 0.01ms !important;
     }
   }
+}
+
+@keyframes theme-reveal {
+  from {
+    clip-path: circle(0 at var(--theme-origin-x, 50%) var(--theme-origin-y, 0%));
+  }
+  to {
+    clip-path: circle(150vmax at var(--theme-origin-x, 50%) var(--theme-origin-y, 0%));
+  }
+}
+
+::view-transition-old(root) {
+  animation: none;
+}
+
+::view-transition-new(root) {
+  animation: theme-reveal 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @layer components {
@@ -111,5 +167,24 @@
   .scroll-thin {
     scrollbar-width: thin;
     scrollbar-color: var(--color-ink-700) transparent;
+  }
+
+  .interactive-card {
+    transition:
+      transform 240ms var(--ease-out-expo),
+      border-color 240ms var(--ease-out-expo),
+      box-shadow 240ms var(--ease-out-expo);
+  }
+
+  .interactive-card:hover {
+    transform: translateY(-4px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .interactive-card,
+    .interactive-card:hover {
+      transform: none;
+      transition: none;
+    }
   }
 }

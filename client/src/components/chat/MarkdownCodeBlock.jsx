@@ -19,8 +19,9 @@ import sql from "react-syntax-highlighter/dist/esm/languages/prism/sql";
 import tsx from "react-syntax-highlighter/dist/esm/languages/prism/tsx";
 import typescript from "react-syntax-highlighter/dist/esm/languages/prism/typescript";
 import yaml from "react-syntax-highlighter/dist/esm/languages/prism/yaml";
-import { Check, Copy, TerminalSquare } from "lucide-react";
+import { motion } from "motion/react";
 import { copyText } from "../../lib/clipboard";
+import { normalizeCodeLanguage } from "../../lib/codeLanguages";
 
 const languageModules = [
   ["markup", markup],
@@ -48,28 +49,6 @@ languageModules.forEach(([name, module]) => {
   SyntaxHighlighter.registerLanguage(name, module);
 });
 
-const aliases = {
-  js: "javascript",
-  jsx: "jsx",
-  ts: "typescript",
-  tsx: "tsx",
-  py: "python",
-  sh: "bash",
-  shell: "bash",
-  zsh: "bash",
-  html: "markup",
-  xml: "markup",
-  svg: "markup",
-  cxx: "cpp",
-  "c++": "cpp",
-  cs: "csharp",
-  "c#": "csharp",
-  yml: "yaml",
-  md: "markdown",
-  plaintext: "text",
-  txt: "text",
-};
-
 const displayNames = {
   javascript: "JavaScript",
   typescript: "TypeScript",
@@ -96,7 +75,7 @@ const registeredLanguages = new Set(languageModules.map(([name]) => name));
 
 const codeTheme = {
   'code[class*="language-"]': {
-    color: "#ece8dc",
+    color: "var(--code-text)",
     background: "none",
     fontFamily:
       '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
@@ -110,7 +89,7 @@ const codeTheme = {
     hyphens: "none",
   },
   'pre[class*="language-"]': {
-    color: "#ece8dc",
+    color: "var(--code-text)",
     background: "transparent",
     fontFamily:
       '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
@@ -125,51 +104,48 @@ const codeTheme = {
     padding: "16px",
     margin: 0,
   },
-  comment: { color: "#7f8976", fontStyle: "italic" },
-  prolog: { color: "#7f8976" },
-  doctype: { color: "#7f8976" },
-  cdata: { color: "#7f8976" },
-  punctuation: { color: "#aaa99f" },
+  comment: { color: "var(--code-comment)", fontStyle: "italic" },
+  prolog: { color: "var(--code-comment)" },
+  doctype: { color: "var(--code-comment)" },
+  cdata: { color: "var(--code-comment)" },
+  punctuation: { color: "var(--code-punctuation)" },
   namespace: { opacity: 0.78 },
-  property: { color: "#c7b7ff" },
-  tag: { color: "#ff9a70" },
-  boolean: { color: "#d7ff3e" },
-  number: { color: "#ffbe98" },
-  constant: { color: "#ffbe98" },
-  symbol: { color: "#d7ff3e" },
-  deleted: { color: "#ff9a70" },
-  selector: { color: "#d7ff3e" },
-  "attr-name": { color: "#b8d1ff" },
-  string: { color: "#d7ff3e" },
-  char: { color: "#d7ff3e" },
-  builtin: { color: "#b8d1ff" },
-  inserted: { color: "#d7ff3e" },
-  operator: { color: "#c8c3b6" },
-  entity: { color: "#c8c3b6" },
-  url: { color: "#b8d1ff" },
-  atrule: { color: "#c7b7ff" },
-  "attr-value": { color: "#d7ff3e" },
-  keyword: { color: "#ff9a70" },
-  function: { color: "#b8d1ff" },
-  "class-name": { color: "#ffd18b" },
-  regex: { color: "#ffd18b" },
-  important: { color: "#ff9a70", fontWeight: 600 },
-  variable: { color: "#f3f0e7" },
-  "maybe-class-name": { color: "#ffd18b" },
-  parameter: { color: "#ece8dc" },
-  "function-variable": { color: "#b8d1ff" },
+  property: { color: "var(--code-property)" },
+  tag: { color: "var(--code-keyword)" },
+  boolean: { color: "var(--code-boolean)" },
+  number: { color: "var(--code-number)" },
+  constant: { color: "var(--code-number)" },
+  symbol: { color: "var(--code-boolean)" },
+  deleted: { color: "var(--code-keyword)" },
+  selector: { color: "var(--code-boolean)" },
+  "attr-name": { color: "var(--code-function)" },
+  string: { color: "var(--code-string)" },
+  char: { color: "var(--code-string)" },
+  builtin: { color: "var(--code-function)" },
+  inserted: { color: "var(--code-string)" },
+  operator: { color: "var(--code-operator)" },
+  entity: { color: "var(--code-operator)" },
+  url: { color: "var(--code-function)" },
+  atrule: { color: "var(--code-class)" },
+  "attr-value": { color: "var(--code-string)" },
+  keyword: { color: "var(--code-keyword)" },
+  function: { color: "var(--code-function)" },
+  "class-name": { color: "var(--code-class)" },
+  regex: { color: "var(--code-class)" },
+  important: { color: "var(--code-keyword)", fontWeight: 600 },
+  variable: { color: "var(--code-text)" },
+  "maybe-class-name": { color: "var(--code-class)" },
+  parameter: { color: "var(--code-text)" },
+  "function-variable": { color: "var(--code-function)" },
 };
 
 function normalizeLanguage(language) {
-  const value = String(language || "")
-    .toLowerCase()
-    .trim();
-  const normalized = aliases[value] || value;
+  const normalized = normalizeCodeLanguage(language);
   return normalized === "text" ? "text" : normalized;
 }
 
 export default function MarkdownCodeBlock({ code, language }) {
-  const [copied, setCopied] = useState(false);
+  const [copyState, setCopyState] = useState("idle");
   const copiedTimer = useRef(null);
   const normalized = normalizeLanguage(language);
   const displayLanguage =
@@ -189,45 +165,81 @@ export default function MarkdownCodeBlock({ code, language }) {
 
   async function copyCode() {
     const wasCopied = await copyText(code);
-    setCopied(wasCopied);
+    setCopyState(wasCopied ? "copied" : "failed");
     if (copiedTimer.current) window.clearTimeout(copiedTimer.current);
-    if (wasCopied) {
-      copiedTimer.current = window.setTimeout(() => setCopied(false), 1800);
-    }
+    copiedTimer.current = window.setTimeout(
+      () => setCopyState("idle"),
+      wasCopied ? 1800 : 2400,
+    );
   }
 
   return (
-    <div className="md-code-block">
+    <motion.div
+      initial={{ opacity: 0, y: 7 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+      className="md-code-block"
+    >
       <div className="md-code-toolbar">
         <span className="flex min-w-0 items-center gap-2">
           <span className="flex items-center gap-1" aria-hidden="true">
-            <span className="size-1.5 rounded-full bg-[#ff9366]/75" />
-            <span className="size-1.5 rounded-full bg-[#d7ff3e]/70" />
-            <span className="size-1.5 rounded-full bg-[#b8d1ff]/65" />
+            <span className="size-1.5 rounded-full bg-ember/80" />
+            <span className="size-1.5 rounded-full bg-ok/75" />
+            <span className="size-1.5 rounded-full bg-sky-400/70" />
           </span>
-          <TerminalSquare
-            className="ml-1 size-3 shrink-0 text-white/32"
-            strokeWidth={1.8}
+          <svg
+            viewBox="0 0 16 16"
+            className="ml-1 size-3 shrink-0 text-[var(--code-muted)]"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
             aria-hidden="true"
-          />
-          <span className="truncate font-mono text-[9px] font-semibold tracking-[0.08em] text-white/45 uppercase">
+          >
+            <rect x="1.5" y="2.5" width="13" height="11" rx="2" />
+            <path d="m4.5 6 2 2-2 2M8 10h3" />
+          </svg>
+          <span className="truncate font-mono text-[9px] font-semibold tracking-[0.08em] text-[var(--code-muted)] uppercase">
             {displayLanguage}
           </span>
         </span>
 
-        <button
+        <motion.button
           type="button"
           onClick={copyCode}
-          className="flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-[9px] font-semibold text-white/45 transition-colors duration-300 hover:bg-white/[0.07] hover:text-white/85"
-          aria-label={copied ? "Code copied" : "Copy code"}
+          whileHover={{ y: -1 }}
+          whileTap={{ scale: 0.94 }}
+          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+          className="flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-[9px] font-semibold text-[var(--code-muted)] transition-[background-color,color] duration-200 hover:bg-[color-mix(in_srgb,var(--code-text)_8%,transparent)] hover:text-[var(--code-text)]"
+          aria-label={
+            copyState === "copied"
+              ? "Code copied"
+              : copyState === "failed"
+                ? "Code copy failed"
+                : "Copy code"
+          }
         >
-          {copied ? (
-            <Check className="size-3 text-[#d7ff3e]" strokeWidth={2.5} />
+          {copyState === "copied" ? (
+            <svg viewBox="0 0 16 16" className="size-3 text-ok" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="m3.5 8.2 2.8 2.8 6.2-6.2" />
+            </svg>
+          ) : copyState === "failed" ? (
+            <svg viewBox="0 0 16 16" className="size-3 text-danger" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+              <path d="M8 4v4M8 11.5h.01M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13Z" />
+            </svg>
           ) : (
-            <Copy className="size-3" strokeWidth={1.8} />
+            <svg viewBox="0 0 16 16" className="size-3" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="5.5" y="5.5" width="8" height="9" rx="1.5" />
+              <path d="M10.5 5.5v-2a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h2" />
+            </svg>
           )}
-          {copied ? "Copied" : "Copy"}
-        </button>
+          {copyState === "copied"
+            ? "Copied"
+            : copyState === "failed"
+              ? "Copy failed"
+              : "Copy"}
+        </motion.button>
       </div>
 
       <div className="md-code-scroll">
@@ -252,7 +264,7 @@ export default function MarkdownCodeBlock({ code, language }) {
           lineNumberStyle={{
             minWidth: "1.8em",
             paddingRight: "1em",
-            color: "rgba(243, 240, 231, 0.22)",
+            color: "var(--code-line-number)",
             textAlign: "right",
             userSelect: "none",
           }}
@@ -262,6 +274,6 @@ export default function MarkdownCodeBlock({ code, language }) {
           {code}
         </SyntaxHighlighter>
       </div>
-    </div>
+    </motion.div>
   );
 }

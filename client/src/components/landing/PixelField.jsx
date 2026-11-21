@@ -4,15 +4,26 @@ import * as THREE from "three";
 
 const SPACING = 0.5;
 
-function Grid({ cols, rows, animated, pointer }) {
+function Grid({ cols, rows, animated, isDark, pointerRef, pointerActive }) {
   const mesh = useRef(null);
+  const smoothPointer = useRef(new THREE.Vector2(10, 10));
+  const hoverStrength = useRef(0);
 
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const color = useMemo(() => new THREE.Color(), []);
 
-  const base = useMemo(() => new THREE.Color("#1b1b21"), []);
-  const hot = useMemo(() => new THREE.Color("#ff5a2c"), []);
-  const paper = useMemo(() => new THREE.Color("#ece8e1"), []);
+  const base = useMemo(
+    () => new THREE.Color(isDark ? "#1b1b21" : "#d8d4cb"),
+    [isDark],
+  );
+  const hot = useMemo(
+    () => new THREE.Color(isDark ? "#ff5a2c" : "#bc3817"),
+    [isDark],
+  );
+  const paper = useMemo(
+    () => new THREE.Color(isDark ? "#ece8e1" : "#302d27"),
+    [isDark],
+  );
 
   // Calculate fixed grid positions only once.
   const cells = useMemo(() => {
@@ -35,15 +46,52 @@ function Grid({ cols, rows, animated, pointer }) {
     return result;
   }, [cols, rows]);
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock, invalidate }, delta) => {
     const m = mesh.current;
     if (!m) return;
 
+    const pointer = pointerRef.current;
     const t = animated ? clock.elapsedTime : 0;
 
+    if (pointerActive.current && hoverStrength.current === 0) {
+      smoothPointer.current.copy(pointer);
+    }
+
+    if (pointerActive.current) {
+      smoothPointer.current.x = THREE.MathUtils.damp(
+        smoothPointer.current.x,
+        pointer.x,
+        12,
+        delta,
+      );
+      smoothPointer.current.y = THREE.MathUtils.damp(
+        smoothPointer.current.y,
+        pointer.y,
+        12,
+        delta,
+      );
+    }
+    hoverStrength.current = THREE.MathUtils.damp(
+      hoverStrength.current,
+      pointerActive.current ? 1 : 0,
+      10,
+      delta,
+    );
+
+    if (
+      !animated &&
+      ((pointerActive.current &&
+        (Math.abs(smoothPointer.current.x - pointer.x) > 0.001 ||
+          Math.abs(smoothPointer.current.y - pointer.y) > 0.001)) ||
+        Math.abs(hoverStrength.current - (pointerActive.current ? 1 : 0)) >
+          0.001)
+    ) {
+      invalidate();
+    }
+
     // Pointer coordinates normalized between -1 and 1.
-    const px = pointer.x * (cols * SPACING) * 0.5;
-    const pz = -pointer.y * (rows * SPACING) * 0.35;
+    const px = smoothPointer.current.x * (cols * SPACING) * 0.5;
+    const pz = -smoothPointer.current.y * (rows * SPACING) * 0.35;
 
     for (let i = 0; i < cells.length; i++) {
       const { x, z, waveX, waveZ } = cells[i];
@@ -53,7 +101,10 @@ function Grid({ cols, rows, animated, pointer }) {
 
       const dx = x - px;
       const dz = z - pz;
-      const lift = Math.exp(-(dx * dx + dz * dz) * 0.12) * 1.1;
+      const lift =
+        Math.exp(-(dx * dx + dz * dz) * 0.12) *
+        1.1 *
+        hoverStrength.current;
 
       const h = Math.max(0.06, 0.28 + wave * 0.22 + lift);
 
@@ -88,11 +139,16 @@ function Grid({ cols, rows, animated, pointer }) {
   );
 }
 
-export default function PixelField({ eventSource, animated = true }) {
+export default function PixelField({
+  eventSource,
+  animated = true,
+  isDark = true,
+}) {
   const wrapRef = useRef(null);
 
   // Start outside the grid so there is no initial center bump.
   const pointer = useRef(new THREE.Vector2(10, 10));
+  const pointerActive = useRef(false);
 
   const invalidateRef = useRef(null);
 
@@ -115,6 +171,15 @@ export default function PixelField({ eventSource, animated = true }) {
     if (!area || !target) return;
 
     const handlePointerMove = (event) => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest("[data-pixel-field-ignore]")
+      ) {
+        pointerActive.current = false;
+        invalidateRef.current?.();
+        return;
+      }
+
       const rect = area.getBoundingClientRect();
 
       if (!rect.width || !rect.height) return;
@@ -124,9 +189,10 @@ export default function PixelField({ eventSource, animated = true }) {
 
       // Ignore pointer positions outside the field.
       if (x < 0 || x > 1 || y < 0 || y > 1) {
-        pointer.current.set(10, 10);
+        pointerActive.current = false;
       } else {
         pointer.current.set(x * 2 - 1, 1 - y * 2);
+        pointerActive.current = true;
       }
 
       // Required for hover updates when animated=false.
@@ -134,7 +200,7 @@ export default function PixelField({ eventSource, animated = true }) {
     };
 
     const handlePointerLeave = () => {
-      pointer.current.set(10, 10);
+      pointerActive.current = false;
       invalidateRef.current?.();
     };
 
@@ -188,13 +254,15 @@ export default function PixelField({ eventSource, animated = true }) {
           invalidateRef.current = invalidate;
         }}
       >
-        <fog attach="fog" args={["#08080a", 7, 20]} />
+        <fog attach="fog" args={[isDark ? "#08080a" : "#f7f5ef", 7, 20]} />
 
         <Grid
           cols={dims.cols}
           rows={dims.rows}
           animated={animated}
-          pointer={pointer.current}
+          isDark={isDark}
+          pointerRef={pointer}
+          pointerActive={pointerActive}
         />
       </Canvas>
     </div>

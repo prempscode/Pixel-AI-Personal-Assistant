@@ -57,7 +57,8 @@ CRITICAL RULES:
 4. When creating a task with a body/description, write meaningful content yourself.
 5. If multiple actions are requested, execute them in order and report each result separately.
 6. When a tool returns confirmation_required, show the user the full email and ask "Send it?". Do not claim it was sent.
-7. Reply in plain text only. Do not use markdown symbols such as ** or # or backticks.
+7. Reply in concise, readable Markdown when it improves clarity. Use short paragraphs, lists, headings, inline code, and Markdown links where helpful; avoid unnecessary formatting.
+8. Use fenced blocks only for source code or runnable terminal commands, and include a supported language tag. Never put email drafts, message bodies, or ordinary prose in code fences; present email drafts as regular formatted text.
       `,
     },
     ...history.map((m) => ({ role: m.role, content: m.text })),

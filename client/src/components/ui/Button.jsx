@@ -1,14 +1,14 @@
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { cn } from "../../lib/cn";
 
 const variants = {
   primary:
-    "bg-paper text-ink-950 hover:bg-white shadow-[0_0_0_1px_rgb(255_255_255/0.2)_inset]",
+    "bg-paper text-ink-950 hover:bg-paper/90 shadow-[0_0_0_1px_rgb(255_255_255/0.2)_inset]",
   ember:
     "bg-ember text-ink-950 hover:bg-ember-soft shadow-[0_8px_30px_-8px_rgb(255_90_44/0.6)]",
   outline:
-    "border border-line-strong text-paper hover:bg-white/5 hover:border-white/30",
-  ghost: "text-muted hover:text-paper hover:bg-white/5",
+    "border border-line-strong text-paper hover:bg-paper/5 hover:border-paper/30",
+  ghost: "text-muted hover:text-paper hover:bg-paper/5",
 };
 const sizes = {
   sm: "h-9 px-3.5 text-[0.82rem] gap-2",
@@ -25,9 +25,16 @@ export default function Button({
   children,
   ...props
 }) {
+  const reduceMotion = useReducedMotion();
+
   return (
     <motion.button
-      whileTap={disabled || loading ? undefined : { scale: 0.97 }}
+      whileHover={
+        reduceMotion || disabled || loading ? undefined : { y: -1 }
+      }
+      whileTap={
+        reduceMotion || disabled || loading ? undefined : { scale: 0.97 }
+      }
       transition={{ type: "spring", stiffness: 500, damping: 30 }}
       disabled={disabled || loading}
       className={cn(

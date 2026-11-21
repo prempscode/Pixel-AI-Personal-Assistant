@@ -4,7 +4,7 @@ export const PROMPT_GROUPS = [
   {
     id: "tasks",
     label: "Tasks",
-    dot: "bg-svc-tasks",
+    icon: "tasks",
     prompts: [
       "Remind me to call John tomorrow at 6 PM",
       "Add a task to renew my passport, with a short checklist in the notes",
@@ -13,13 +13,13 @@ export const PROMPT_GROUPS = [
   {
     id: "calendar",
     label: "Calendar",
-    dot: "bg-svc-calendar",
+    icon: "calendar",
     prompts: ["Block 2 to 3 PM on Friday for a project review"],
   },
   {
     id: "gmail",
     label: "Gmail",
-    dot: "bg-svc-gmail",
+    icon: "gmail",
     prompts: [
       "Draft an email to alex@example.com asking to reschedule our meeting",
       "Search my Gmail for emails about invoices",
@@ -28,13 +28,13 @@ export const PROMPT_GROUPS = [
   {
     id: "drive",
     label: "Drive",
-    dot: "bg-svc-drive",
+    icon: "drive",
     prompts: ["Find my latest invoice in Drive", "List my recent Drive files"],
   },
   {
     id: "utilities",
     label: "Time & links",
-    dot: "bg-ember",
+    icon: "utility",
     prompts: ["What time is it in Tokyo?"],
   },
 ];

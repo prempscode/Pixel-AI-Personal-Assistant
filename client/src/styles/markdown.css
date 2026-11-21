@@ -1,24 +1,18 @@
 /* Rich AI response typography, scoped to assistant messages. */
 
 .markdown-body {
-  --md-text: color-mix(in srgb, var(--color-ink) 82%, transparent);
-  --md-strong: color-mix(in srgb, var(--color-ink) 96%, transparent);
-  --md-muted: color-mix(in srgb, var(--color-ink) 58%, transparent);
-  --md-faint: color-mix(in srgb, var(--color-ink) 42%, transparent);
-  --md-border: color-mix(in srgb, var(--color-ink) 12%, transparent);
-  --md-accent: #d7ff3e;
-  --md-accent-text: #5f7a14;
+  --md-text: color-mix(in srgb, var(--color-paper) 82%, transparent);
+  --md-strong: color-mix(in srgb, var(--color-paper) 96%, transparent);
+  --md-muted: color-mix(in srgb, var(--color-paper) 58%, transparent);
+  --md-faint: color-mix(in srgb, var(--color-paper) 42%, transparent);
+  --md-border: color-mix(in srgb, var(--color-paper) 12%, transparent);
+  --md-accent: var(--color-ember);
   max-width: 710px;
   overflow-wrap: anywhere;
   color: var(--md-text);
-  font-size: 0.9375rem;
-  line-height: 1.72;
+  font-size: 0.8125rem;
+  line-height: 1.62;
   letter-spacing: -0.006em;
-}
-
-[data-theme="light"] .markdown-body {
-  --md-accent: #8ba52b;
-  --md-accent-text: #506b0d;
 }
 
 .markdown-body > :first-child {
@@ -48,21 +42,21 @@
 }
 
 .markdown-body h1 {
-  font-size: 1.42rem;
+  font-size: 1.32rem;
 }
 
 .markdown-body h2 {
-  font-size: 1.2rem;
+  font-size: 1.11rem;
 }
 
 .markdown-body h3 {
-  font-size: 1.06rem;
+  font-size: 0.98rem;
 }
 
 .markdown-body h4,
 .markdown-body h5,
 .markdown-body h6 {
-  font-size: 0.96rem;
+  font-size: 0.9rem;
 }
 
 .markdown-body strong {
@@ -212,15 +206,67 @@
   white-space: break-spaces;
 }
 
+.markdown-body .md-plain-block {
+  margin: 0.8em 0;
+  padding: 0.75rem 0.9rem;
+  overflow-x: auto;
+  border-left: 2px solid var(--md-accent);
+  border-radius: 0 10px 10px 0;
+  background: color-mix(in srgb, var(--color-ink) 5%, transparent);
+  color: var(--md-text);
+  font-family: inherit;
+  font-size: 0.92em;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
 .markdown-body .md-code-block {
+  --code-bg: #0c0e0b;
+  --code-toolbar-bg: #151811;
+  --code-text: #ece8dc;
+  --code-muted: rgb(243 240 231 / 0.52);
+  --code-line-number: rgb(243 240 231 / 0.28);
+  --code-border: rgb(243 240 231 / 0.1);
+  --code-comment: #929889;
+  --code-punctuation: #c8c3b6;
+  --code-property: #ffad86;
+  --code-keyword: #ff9366;
+  --code-boolean: #d7aa69;
+  --code-number: #efbd7c;
+  --code-string: #b8d29a;
+  --code-function: #a6c8f2;
+  --code-class: #e6cd96;
+  --code-operator: #c8c3b6;
   margin: 1em 0;
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 0.09);
+  border: 1px solid var(--code-border);
   border-radius: 14px;
-  background: #090b07;
+  background: var(--code-bg);
   box-shadow:
     0 18px 44px -30px rgb(0 0 0 / 0.72),
     inset 0 1px 0 rgb(255 255 255 / 0.035);
+}
+
+[data-theme="light"] .markdown-body .md-code-block {
+  --code-bg: #faf7f0;
+  --code-toolbar-bg: #efebe2;
+  --code-text: #2d2a24;
+  --code-muted: #716a5f;
+  --code-line-number: #9a9285;
+  --code-border: #ded7ca;
+  --code-comment: #77746c;
+  --code-punctuation: #5a554c;
+  --code-property: #9f3c1e;
+  --code-keyword: #b34020;
+  --code-boolean: #805d18;
+  --code-number: #8c5a14;
+  --code-string: #3e6f4e;
+  --code-function: #345b86;
+  --code-class: #7d5b22;
+  --code-operator: #5a554c;
+  box-shadow:
+    0 12px 30px -24px rgb(45 42 36 / 0.42),
+    inset 0 1px 0 rgb(255 255 255 / 0.8);
 }
 
 .markdown-body .md-code-toolbar {
@@ -230,8 +276,8 @@
   justify-content: space-between;
   gap: 12px;
   padding: 0 10px 0 13px;
-  border-bottom: 1px solid rgb(255 255 255 / 0.07);
-  background: #11140d;
+  border-bottom: 1px solid var(--code-border);
+  background: var(--code-toolbar-bg);
 }
 
 .markdown-body .md-code-scroll {
@@ -240,7 +286,7 @@
 
 .markdown-body .md-code-scroll > div {
   scrollbar-width: thin;
-  scrollbar-color: rgb(243 240 231 / 0.18) transparent;
+  scrollbar-color: var(--code-muted) transparent;
 }
 
 .markdown-body .md-code-scroll ::-webkit-scrollbar {
@@ -249,14 +295,14 @@
 
 .markdown-body .md-code-scroll ::-webkit-scrollbar-thumb {
   border-radius: 999px;
-  background: rgb(243 240 231 / 0.18);
+  background: var(--code-muted);
 }
 
 .markdown-body .md-code-fallback {
   margin: 0;
   padding: 14px 16px;
   overflow-x: auto;
-  color: #ece8dc;
+  color: var(--code-text);
   font-family:
     "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 12.5px;

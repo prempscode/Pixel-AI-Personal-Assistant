@@ -1,11 +1,12 @@
 import { cn } from "../../lib/cn";
 import Reveal from "../ui/Reveal";
+import ServiceIcon from "../ui/ServiceIcon";
 
 // Every card maps to a real tool in the backend's toolRegistry.
 const CARDS = [
   {
     span: "lg:col-span-3",
-    svc: "bg-svc-tasks",
+    service: "tasks",
     tag: "Google Tasks",
     title: "Capture it before you forget it",
     body: "Reminders and to-dos land in Google Tasks, with notes written for you when the request needs them.",
@@ -13,7 +14,7 @@ const CARDS = [
   },
   {
     span: "lg:col-span-3",
-    svc: "bg-svc-calendar",
+    service: "calendar",
     tag: "Google Calendar",
     title: "Block the time, not just the idea",
     body: "Anything with a start and an end becomes a real calendar event, checked for a valid time range.",
@@ -21,7 +22,7 @@ const CARDS = [
   },
   {
     span: "lg:col-span-2",
-    svc: "bg-svc-gmail",
+    service: "gmail",
     tag: "Gmail drafts",
     title: "Drafts, written for you",
     body: "Pixel writes the body and saves it as a draft. Nothing is sent.",
@@ -29,7 +30,7 @@ const CARDS = [
   },
   {
     span: "lg:col-span-2",
-    svc: "bg-svc-gmail",
+    service: "gmail",
     tag: "Send with confirmation",
     title: "Sends only when you say so",
     body: "Pixel shows the full email first and sends it only after you confirm in a separate message.",
@@ -37,7 +38,7 @@ const CARDS = [
   },
   {
     span: "lg:col-span-2",
-    svc: "bg-svc-gmail",
+    service: "gmail",
     tag: "Gmail search",
     title: "Find the thread",
     body: "Search your mail and get subject, sender and date back in the chat.",
@@ -45,7 +46,7 @@ const CARDS = [
   },
   {
     span: "lg:col-span-4",
-    svc: "bg-svc-drive",
+    service: "drive",
     tag: "Google Drive",
     title: "Your files, one sentence away",
     body: "List your ten most recently modified files, or search Drive by name or by what's inside the document.",
@@ -53,7 +54,7 @@ const CARDS = [
   },
   {
     span: "lg:col-span-2",
-    svc: "bg-ember",
+    service: "utility",
     tag: "Time & links",
     title: "Quick answers",
     body: "Current time in any timezone, plus ready-to-open website and search links.",
@@ -72,7 +73,7 @@ function Card({ c, i }) {
     <Reveal delay={(i % 3) * 0.07} className={cn("group", c.span)}>
       <article
         onPointerMove={onMove}
-        className="relative h-full overflow-hidden rounded-3xl border border-line bg-ink-900 p-6 transition-colors duration-300 hover:border-line-strong sm:p-7"
+        className="interactive-card relative h-full overflow-hidden rounded-3xl border border-line bg-ink-900 p-6 hover:border-line-strong hover:shadow-[0_22px_55px_-35px_rgb(255_90_44/0.35)] sm:p-7"
       >
         <div
           aria-hidden="true"
@@ -84,7 +85,7 @@ function Card({ c, i }) {
         />
         <div className="relative flex h-full flex-col">
           <p className="eyebrow flex items-center gap-2">
-            <span className={cn("size-1.5 rounded-full", c.svc)} />
+            <ServiceIcon service={c.service} size={14} />
             {c.tag}
           </p>
           <h3 className="mt-5 text-xl font-medium leading-snug tracking-tight sm:text-[1.4rem]">
@@ -92,8 +93,13 @@ function Card({ c, i }) {
           </h3>
           <p className="mt-2.5 max-w-md text-[0.95rem] leading-relaxed text-muted">{c.body}</p>
           <p className="mt-auto pt-7">
-            <span className="inline-block max-w-full rounded-xl border border-line bg-ink-850 px-3.5 py-2 font-mono text-[0.78rem] leading-snug text-paper/90">
-              <span className="mr-2 text-ember">›</span>
+            <span className="relative inline-block max-w-full rounded-xl border border-line bg-ink-850 py-2 pr-3.5 pl-3.5 font-mono text-[0.78rem] leading-snug text-paper/90 transition-[padding-left] duration-300 ease-[var(--ease-out-expo)] group-hover:pl-6">
+              <span
+                aria-hidden="true"
+                className="absolute top-1/2 left-3 -translate-x-1 -translate-y-1/2 text-ember opacity-0 transition-[opacity,transform] duration-300 ease-[var(--ease-out-expo)] group-hover:translate-x-0 group-hover:opacity-100"
+              >
+                ›
+              </span>
               {c.prompt}
             </span>
           </p>

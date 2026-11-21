@@ -10,6 +10,20 @@
       content="Pixel turns plain-language requests into real actions in your Google account: Tasks, Calendar, Gmail and Drive."
     />
     <title>Pixel: say it, and it's done</title>
+    <script>
+      try {
+        const theme = localStorage.getItem("pixel-theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.dataset.theme = theme;
+          document.documentElement.style.colorScheme = theme;
+          document
+            .querySelector('meta[name="theme-color"]')
+            ?.setAttribute("content", theme === "light" ? "#f4f0e6" : "#0a0b09");
+        }
+      } catch {
+        // The default dark theme remains available when storage is disabled.
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

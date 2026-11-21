@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { cn } from "../../lib/cn";
+import ServiceIcon from "../ui/ServiceIcon";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -57,8 +58,8 @@ export default function HowItWorks() {
 
   return (
     <section id="how" ref={root} className="relative scroll-mt-16 overflow-hidden border-y border-line bg-ink-900/60">
-      <div className="mx-auto grid min-h-[100svh] max-w-7xl items-center gap-14 px-5 py-24 sm:px-8 lg:grid-cols-[1fr_1.05fr] lg:py-0">
-        <div>
+      <div className="mx-auto grid grid-cols-1 min-h-[100svh] max-w-7xl items-center gap-14 px-5 py-24 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:py-0">
+        <div className="min-w-0">
           <p className="eyebrow">How it works</p>
           <h2 className="display mt-5 text-5xl sm:text-7xl">
             From sentence to <em className="text-muted">done</em>.
@@ -77,7 +78,7 @@ export default function HowItWorks() {
         </div>
 
         {/* Illustrative walk-through of one request */}
-        <div className="relative">
+        <div className="relative min-w-0">
           <div className="rounded-3xl border border-line-strong bg-ink-850 p-5 shadow-[0_40px_120px_-30px_rgb(0_0_0/0.8)] sm:p-7">
             <div className="flex items-center justify-between">
               <span className="eyebrow">Example request</span>
@@ -93,10 +94,10 @@ export default function HowItWorks() {
                 Block 2 to 3 PM on Friday for a project review
               </div>
 
-              <div data-layer className="flex items-center gap-3 rounded-xl border border-line bg-ink-900 px-4 py-3">
-                <span className="size-2 rounded-full bg-svc-calendar" />
+              <div data-layer className="flex items-center gap-2 rounded-xl border border-line bg-ink-900 px-3 py-3 sm:gap-3 sm:px-4">
+                <ServiceIcon service="calendar" size={16} />
                 <code className="font-mono text-[0.8rem] text-paper/90">create_calendar_event</code>
-                <span className="ml-auto font-mono text-[0.7rem] uppercase tracking-wider text-dim">tool</span>
+                <span className="ml-auto hidden shrink-0 font-mono text-[0.7rem] uppercase tracking-wider text-dim sm:block">tool</span>
               </div>
 
               <div data-layer>

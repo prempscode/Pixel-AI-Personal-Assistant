@@ -1,5 +1,7 @@
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Moon, Sun } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import Moon01Icon from "@hugeicons/core-free-icons/Moon01Icon";
+import Sun01Icon from "@hugeicons/core-free-icons/Sun01Icon";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useTheme } from "../../context/ThemeContext";
 import { cn } from "../../lib/cn";
 
@@ -7,12 +9,13 @@ export default function ThemeToggle({ className, size = "md" }) {
   const { theme, toggleTheme } = useTheme();
   const reduceMotion = useReducedMotion();
   const isDark = theme === "dark";
-  const Icon = isDark ? Sun : Moon;
+  const icon = isDark ? Sun01Icon : Moon01Icon;
 
   return (
     <button
       type="button"
       onClick={toggleTheme}
+      aria-pressed={!isDark}
       aria-label={
         isDark ? "Switch to light mode" : "Switch to dark mode"
       }
@@ -36,7 +39,7 @@ export default function ThemeToggle({ className, size = "md" }) {
           transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
           className="flex items-center justify-center"
         >
-          <Icon className="size-[15px]" strokeWidth={1.8} />
+          <HugeiconsIcon icon={icon} size={16} strokeWidth={1.8} />
         </motion.span>
       </AnimatePresence>
     </button>

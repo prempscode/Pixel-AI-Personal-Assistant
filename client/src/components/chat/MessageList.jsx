@@ -12,7 +12,7 @@ export default function MessageList({ messages, sending, name, onPick, onRetry, 
   const [away, setAway] = useState(false); // user scrolled up, don't yank them down
 
   useEffect(() => {
-    if (!away || sending === false) {
+    if (!away) {
       endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
     }
   }, [messages, sending, away]);
@@ -47,7 +47,7 @@ export default function MessageList({ messages, sending, name, onPick, onRetry, 
         {messages.length === 0 && !sending ? (
           <EmptyState name={name} onPick={onPick} />
         ) : (
-          <ol aria-label="Conversation" className="mx-auto flex max-w-3xl flex-col gap-6 py-8">
+          <ol aria-label="Conversation" className="mx-auto flex max-w-3xl flex-col gap-4 py-5 sm:gap-5 sm:py-6">
             {messages.map((m) => (
               <Message
                 key={m.id}

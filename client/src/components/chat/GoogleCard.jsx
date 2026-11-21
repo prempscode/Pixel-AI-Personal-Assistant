@@ -1,4 +1,5 @@
 import Button, { GoogleG } from "../ui/Button";
+import GoogleConnectedStatus from "../ui/GoogleConnectedStatus";
 import { cn } from "../../lib/cn";
 
 /** Connection state for the user's Google account (GET /api/google/status). */
@@ -16,16 +17,13 @@ export default function GoogleCard({ google, compact = false }) {
 
   if (status === "connected") {
     return (
-      <div className="flex items-center gap-3 rounded-2xl border border-line bg-ink-850 p-3.5">
-        <span className="relative grid size-2.5 place-items-center" aria-hidden="true">
-          <span className="absolute size-2.5 rounded-full bg-ok/40" />
-          <span className="size-1.5 rounded-full bg-ok" />
-        </span>
-        <div className="min-w-0">
-          <p className="text-sm font-medium">Google connected</p>
-          {!compact && <p className="text-[0.75rem] text-muted">Tasks, Calendar, Gmail, Drive</p>}
-        </div>
-      </div>
+      <GoogleConnectedStatus
+        labelTag="p"
+        labelClassName="text-sm font-medium"
+        className="rounded-2xl border border-line bg-ink-850 p-3.5"
+      >
+        {!compact && <p className="text-[0.75rem] text-muted">Tasks, Calendar, Gmail, Drive</p>}
+      </GoogleConnectedStatus>
     );
   }
 
