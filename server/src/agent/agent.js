@@ -74,7 +74,7 @@ CRITICAL RULES:
   for (let i = 0; i < maxIterations; i++) {
     // 1. Ask Groq what to do next.
     const response = await groq.chat.completions.create({
-      model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+      model: process.env.GROQ_MODEL,
       messages,
       tools,
       tool_choice: "auto",
