@@ -134,3 +134,51 @@ router.get("/status", authMiddleware, async (req, res) => {
 });
 
 module.exports = router;
+
+/*
+  Supabase identifies the user; Google authorizes
+  access to Google services.
+  payload.userId is the same verified Supabase user 
+  ID carried in the signed state.
+  findOneAndUpdate() doesn't change the user's identity; 
+  it finds the credential document belonging to that user and updates its Google credential data, or creates one if necessary.
+  upsert: true means create the document if it doesn't exist.
+  new: true returns the updated document, but our code 
+  doesn't use the returned value.
+  The state protects against tampering and helps associate the 
+  callback with the initiating user, but our implementation still needs one-time state/replay protection
+  */
+
+/*
+  In my Pixel AI Personal Assistant project, I implemented Google OAuth 
+  to allow users to connect their Google services like Calendar, Gmail, Tasks, and Drive.
+
+  First, I protect the Google connection route using authentication 
+  middleware, so only logged-in users can start the connection. Then I 
+  generate a Google authorization URL with the required scopes and a signed 
+  state containing the user's ID and an expiration time.
+
+  When the user grants permission, Google redirects to my callback route with 
+  an authorization code. My backend exchanges this code for Google tokens 
+  and retrieves the refresh token.
+
+  I encrypt the refresh token using AES-256-GCM before storing it in MongoDB. 
+  This prevents the token from being stored as plain text. Later, my backend 
+  can use the stored credential to access Google services without requiring 
+  the user to reconnect every time.
+
+  I also created a status route to check whether the user has connected their Google account.
+
+  */
+
+/**
+   
+  Why state is critical in generateAuthUrl ?
+
+• Preventing CSRF(cross site request forgery) (Login Hijacking). Without a unique, unguessable state
+    parameter, an attacker could complete an OAuth login with their own account,
+    capture the callback URL (?code=...), and trick a victim into visiting it.
+    The victim’s browser would silently link the attacker's third-party account
+    to the victim's local session. Comparing the returned state against a value
+    stored in the user's session/cookie blocks this.
+*/
