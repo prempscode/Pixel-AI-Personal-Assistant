@@ -144,3 +144,16 @@ CRITICAL RULES:
 }
 
 module.exports = runAgent;
+
+
+/*
+I built an AI agent controller that connects the user's message 
+with the Groq LLM and our backend tools. It loads the recent conversation
+ history from MongoDB, constructs the prompt with system instructions and
+  tool definitions, and sends it to Groq. If the model requests a tool, 
+  mybackend executes it through a centralized tool executor and returns the
+  result to the model. This process runs in a bounded loop so the model can 
+  perform multiple actions before producing a final response. Once the final 
+  response is generated, the user and assistant messages
+ are saved to MongoDB and returned to the frontend.
+*/
