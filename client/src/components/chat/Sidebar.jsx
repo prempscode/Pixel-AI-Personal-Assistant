@@ -3,6 +3,7 @@ import Logo from "../ui/Logo";
 import GoogleCard from "./GoogleCard";
 import { PROMPT_GROUPS } from "./prompts";
 import ServiceIcon from "../ui/ServiceIcon";
+import HoldButton from "./HoldButton";
 
 const clip = (s, n = 46) => (s.length > n ? `${s.slice(0, n).trimEnd()}…` : s);
 
@@ -154,19 +155,29 @@ export default function Sidebar({ user, google, messages, onPick, onJump, onClea
         ) : (
           <div className="flex items-center gap-2">
             <div className="group/clear relative min-w-0 flex-1">
-              <button
-                onClick={() => setConfirmClear(true)}
+              <HoldButton
                 disabled={messages.length === 0}
-                aria-describedby="clear-transcript-help"
-                className="flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-ember px-3 text-[0.8rem] font-semibold text-ink-950 transition-[background-color,transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:bg-ember/90 hover:shadow-[0_10px_26px_-16px_rgb(255_90_44/0.75)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:bg-ember disabled:hover:shadow-none"
+                describedBy="clear-transcript-help"
+                onHold={() => {
+                  onClear();
+                  setConfirmClear(false);
+                }}
+                onTap={() => setConfirmClear(true)}
+                doneLabel="Transcript cleared"
               >
-                <svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <svg viewBox="0 0 16 16" className="size-[15px]" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M2.5 4.5h11M6 4.5V3h4v1.5m2.5 0-.6 8.2H4.1l-.6-8.2M6.5 7v3.5M9.5 7v3.5" />
                 </svg>
-                Clear transcript
-              </button>
-              <div
+                Hold to clear transcript
+              </HoldButton>
+              <p
                 id="clear-transcript-help"
+                className="mt-2 px-1 text-[0.68rem] leading-relaxed text-dim"
+              >
+                Clears this view; Pixel can still use the last 20 messages as context.
+              </p>
+              <div
+                id="clear-transcript-tooltip"
                 role="tooltip"
                 className="pointer-events-none absolute bottom-full left-0 z-30 mb-3 w-64 translate-y-1 rounded-xl border border-line-strong bg-ink-850 p-3 text-[0.75rem] leading-relaxed text-muted opacity-0 shadow-2xl transition-[opacity,transform] duration-200 group-hover/clear:translate-y-0 group-hover/clear:opacity-100 group-focus-within/clear:translate-y-0 group-focus-within/clear:opacity-100"
               >

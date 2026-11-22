@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { signOut } from "../services/authService";
 import { useChat } from "../hooks/useChat";
@@ -169,7 +169,17 @@ export default function Chat() {
               <path d="M8 3.5v13" />
             </svg>
           </button>
-          <h1 className="font-display text-2xl leading-none">Pixel</h1>
+          <Link
+            to="/"
+            aria-label="Back to Pixel home"
+            title="Back to home"
+            className="-ml-1 inline-flex min-h-9 items-center gap-1.5 rounded-lg px-1.5 text-sm font-medium text-muted transition-colors hover:text-paper"
+          >
+            <svg viewBox="0 0 20 20" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12.5 4.5 7 10l5.5 5.5M7.5 10H17" />
+            </svg>
+            <span>Back</span>
+          </Link>
           {google.status !== "connected" && (
             <div className="ml-auto flex items-center gap-2 text-xs text-muted" aria-live="polite">
               <span

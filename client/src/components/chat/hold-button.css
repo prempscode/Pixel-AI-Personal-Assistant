@@ -1,0 +1,112 @@
+.hold-button {
+  --hold-progress: 0%;
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-height: 40px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-ember) 30%, transparent);
+  border-radius: 12px;
+  background: var(--color-ink-850);
+  color: var(--color-paper);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    transform 180ms ease;
+}
+
+.hold-button:not(:disabled):hover {
+  border-color: color-mix(in srgb, var(--color-ember) 65%, transparent);
+  background: var(--color-ink-800);
+}
+
+.hold-button[data-phase="holding"] {
+  transform: scale(0.98);
+}
+
+.hold-button:focus-visible {
+  outline: 2px solid var(--color-ember);
+  outline-offset: 3px;
+}
+
+.hold-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.hold-button__label {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  padding: 0.6rem 0.75rem;
+  place-items: center;
+}
+
+.hold-button__idle,
+.hold-button__done {
+  grid-area: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  transition:
+    opacity 180ms ease,
+    filter 180ms ease;
+}
+
+.hold-button__done {
+  opacity: 0;
+  filter: blur(2px);
+}
+
+.hold-button[data-phase="done"] .hold-button__idle {
+  opacity: 0;
+  filter: blur(2px);
+}
+
+.hold-button[data-phase="done"] .hold-button__done {
+  opacity: 1;
+  filter: blur(0);
+}
+
+.hold-button__fill {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  overflow: hidden;
+  place-items: center;
+  background: var(--color-ember);
+  color: var(--color-ink-950);
+  clip-path: inset(0 100% 0 0 round 11px);
+  pointer-events: none;
+}
+
+.hold-button[data-phase="holding"] .hold-button__fill {
+  clip-path: inset(0 0 0 0 round 11px);
+  transition: clip-path var(--hold-time) linear;
+}
+
+.hold-button[data-phase="idle"] .hold-button__fill {
+  clip-path: inset(0 100% 0 0 round 11px);
+  transition: clip-path 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hold-button[data-phase="done"] .hold-button__fill {
+  clip-path: inset(0 0 0 0 round 11px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hold-button,
+  .hold-button__idle,
+  .hold-button__done {
+    transition-duration: 0.01ms;
+  }
+}
