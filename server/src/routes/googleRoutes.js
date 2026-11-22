@@ -7,7 +7,7 @@ const { encrypt } = require("../utils/tokenCrypto");
 
 const router = express.Router();
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const FRONTEND_URL = process.env.FRONTEND_URL;
 
 const STATE_SECRET = process.env.STATE_SECRET;
 if (!STATE_SECRET) {
