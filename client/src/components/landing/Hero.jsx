@@ -1,5 +1,6 @@
 import { lazy, Suspense, useRef } from "react";
 import {
+  LayoutGroup,
   motion,
   useReducedMotion,
   useScroll,
@@ -104,36 +105,44 @@ export default function Hero({ isAuthed, onStart, onOpen, loading }) {
             </motion.span>
           </span>
 
-          <span className="block overflow-hidden pb-[0.12em]">
+          <LayoutGroup>
             <motion.span
-              variants={line}
-              custom={1}
-              initial="hidden"
-              animate="show"
+              className="block overflow-hidden pb-[0.12em]"
+              layout
+              transition={{
+                layout: { type: "spring", damping: 30, stiffness: 400 },
+              }}
             >
-              <TextRotate
-                texts={[
-                  "turns requests",
-                  "manages tasks",
-                  "organizes time",
-                  "sends emails",
-                  "finds files",
-                  "takes action",
-                  "gets things done",
-                ]}
-                mainClassName="inline-block text-white px-2 sm:px-2 md:px-3 bg-[#ff5941] overflow-hidden py-0.5 sm:py-1 md:py-2 justify-center rounded-lg max-[400px]:text-[0.8em]"
-                staggerFrom={"last"}
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "-120%" }}
-                staggerDuration={0.025}
-                splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
-                transition={{ type: "spring", damping: 30, stiffness: 400 }}
-                rotationInterval={2000}
-              />
-              <em className="text-paper block">with purpose.</em>
+              <motion.span
+                variants={line}
+                custom={1}
+                initial="hidden"
+                animate="show"
+              >
+                <TextRotate
+                  texts={[
+                    "turns requests",
+                    "manages tasks",
+                    "organizes time",
+                    "sends emails",
+                    "finds files",
+                    "takes action",
+                    "gets things done",
+                  ]}
+                  mainClassName="inline-block text-white px-2 sm:px-2 md:px-3 bg-[#ff5941] overflow-hidden py-0.5 sm:py-1 md:py-2 justify-center rounded-lg max-[400px]:text-[0.8em]"
+                  staggerFrom="last"
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  exit={{ y: "-120%" }}
+                  staggerDuration={0.025}
+                  splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
+                  transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                  rotationInterval={2000}
+                />
+                <em className="text-paper block">with purpose.</em>
+              </motion.span>
             </motion.span>
-          </span>
+          </LayoutGroup>
         </h1>
 
         <motion.p

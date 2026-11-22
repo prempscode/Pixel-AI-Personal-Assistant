@@ -14,9 +14,6 @@ if (!STATE_SECRET) {
   throw new Error("STATE_SECRET is not set in the environment.");
 }
 
-// Least privilege: only what the 10 tools actually use.
-// gmail.readonly is needed for search_gmail (messages.list); gmail.compose
-// covers drafts and sending; drive.readonly covers list/search.
 const SCOPES = [
   "https://www.googleapis.com/auth/calendar.events",
   "https://www.googleapis.com/auth/tasks",
@@ -29,13 +26,9 @@ function getOAuthClient() {
   return new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    process.env.GOOGLE_REDIRECT_URI, // e.g. http://localhost:5000/api/google/callback
+    process.env.GOOGLE_REDIRECT_URI,
   );
 }
-
-// ---- signed OAuth state (no cookie needed, works across domains) ----
-// state = base64url(payload) + "." + HMAC(payload). The userId inside can't be
-// changed by anyone who doesn't know STATE_SECRET.
 
 function signState(payload) {
   const data = Buffer.from(JSON.stringify(payload)).toString("base64url");
@@ -45,6 +38,15 @@ function signState(payload) {
     .digest("base64url");
   return `${data}.${sig}`;
 }
+/*
+signState creates a tamper-proof token before we redirect a user to Google 
+for OAuth. First, it serializes the payload—which holds the userId, a random 
+nonce, and an expiration time—and encodes it into a URL-safe Base64 string. 
+Then, it generates an HMAC-SHA256 signature using a server-side secret key 
+and appends it with a dot. That way, when Google redirects back to our callback, 
+we can verify the signature to guarantee the state wasn't altered in transit 
+and prevents CSRF attacks.
+*/
 
 function verifyState(state) {
   if (typeof state !== "string") return null;

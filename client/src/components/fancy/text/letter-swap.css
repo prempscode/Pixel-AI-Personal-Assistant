@@ -1,0 +1,57 @@
+.letter-swap__word {
+  display: inline-flex;
+  white-space: nowrap;
+}
+
+.letter-swap__cell {
+  display: inline-grid;
+  grid-template-rows: 1em;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+
+.letter-swap__face {
+  grid-area: 1 / 1;
+  display: block;
+  transition:
+    transform 460ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 220ms ease;
+  transition-delay: var(--swap-delay);
+}
+
+.letter-swap__face--next {
+  transform: translateY(var(--swap-enter));
+}
+
+.cta-hover:hover .letter-swap__face,
+.cta-hover:focus-within .letter-swap__face {
+  transform: translateY(var(--swap-exit));
+}
+
+.cta-hover:hover .letter-swap__face--next,
+.cta-hover:focus-within .letter-swap__face--next {
+  transform: translateY(0);
+}
+
+.letter-swap--pingpong .letter-swap__face {
+  transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .letter-swap__face {
+    transition: none;
+  }
+
+  .letter-swap__face,
+  .letter-swap__face--next,
+  .cta-hover:hover .letter-swap__face,
+  .cta-hover:focus-within .letter-swap__face,
+  .cta-hover:hover .letter-swap__face--next,
+  .cta-hover:focus-within .letter-swap__face--next {
+    transform: none;
+  }
+
+  .letter-swap__face--next {
+    display: none;
+  }
+}
