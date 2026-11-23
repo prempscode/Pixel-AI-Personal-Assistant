@@ -212,7 +212,10 @@ function Message({ m, onCopy, onRetry, confirmable, onConfirm, onCancel, sending
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      className={cn("group/msg flex gap-3 scroll-mt-4", isUser && "justify-end")}
+      className={cn(
+        "group/msg flex w-full min-w-0 gap-3 scroll-mt-4",
+        isUser && "justify-end",
+      )}
     >
       {!isUser && (
         <span className="mt-1 grid size-8 shrink-0 place-items-center rounded-xl border border-line bg-ink-850">
@@ -220,7 +223,14 @@ function Message({ m, onCopy, onRetry, confirmable, onConfirm, onCancel, sending
         </span>
       )}
 
-      <div className={cn("flex min-w-0 max-w-[min(38rem,92%)] flex-col", isUser ? "items-end" : "items-start")}>
+      <div
+        className={cn(
+          "flex min-w-0 flex-col",
+          isUser
+            ? "w-fit max-w-[min(38rem,92%)] items-end"
+            : "w-0 flex-1 max-w-[38rem] items-start",
+        )}
+      >
         {m.error ? (
           <div role="alert" className="rounded-2xl rounded-tl-md border border-danger/30 bg-danger/[0.06] px-4 py-3.5">
             <p className="flex items-center gap-2 text-sm font-medium text-danger">
@@ -237,7 +247,7 @@ function Message({ m, onCopy, onRetry, confirmable, onConfirm, onCancel, sending
         ) : (
           <div
             className={cn(
-              "break-words px-3.5 py-2.5 text-sm leading-relaxed",
+              "w-fit min-w-0 max-w-full break-words px-3.5 py-2.5 text-sm leading-relaxed",
               isUser
                 ? "whitespace-pre-wrap rounded-2xl rounded-br-md bg-paper text-ink-950"
                 : "rounded-2xl rounded-tl-md border border-line bg-ink-850 text-paper",

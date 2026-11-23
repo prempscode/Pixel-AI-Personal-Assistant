@@ -7,6 +7,8 @@
   --md-faint: color-mix(in srgb, var(--color-paper) 42%, transparent);
   --md-border: color-mix(in srgb, var(--color-paper) 12%, transparent);
   --md-accent: var(--color-ember);
+  width: 100%;
+  min-width: 0;
   max-width: 710px;
   overflow-wrap: anywhere;
   color: var(--md-text);
@@ -238,6 +240,8 @@
   --code-class: #e6cd96;
   --code-operator: #c8c3b6;
   margin: 1em 0;
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   border: 1px solid var(--code-border);
   border-radius: 14px;
@@ -281,7 +285,10 @@
 }
 
 .markdown-body .md-code-scroll {
-  overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .markdown-body .md-code-scroll > div {
@@ -311,6 +318,8 @@
 }
 
 .markdown-body .markdown-table-wrap {
+  box-sizing: border-box;
+  width: 100%;
   max-width: 100%;
   margin: 1em 0;
   overflow-x: auto;
@@ -452,11 +461,6 @@
 
   .markdown-body h3 {
     font-size: 1rem;
-  }
-
-  .markdown-body .md-code-block {
-    margin-right: -0.25rem;
-    margin-left: -0.25rem;
   }
 
   .markdown-body .markdown-image {

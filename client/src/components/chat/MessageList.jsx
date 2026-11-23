@@ -47,7 +47,7 @@ export default function MessageList({ messages, sending, name, onPick, onRetry, 
         {messages.length === 0 && !sending ? (
           <EmptyState name={name} onPick={onPick} />
         ) : (
-          <ol aria-label="Conversation" className="mx-auto flex max-w-3xl flex-col gap-4 py-5 sm:gap-5 sm:py-6">
+          <ol aria-label="Conversation" className="mx-auto flex w-full min-w-0 max-w-3xl flex-col gap-4 py-5 sm:gap-5 sm:py-6">
             {messages.map((m) => (
               <Message
                 key={m.id}

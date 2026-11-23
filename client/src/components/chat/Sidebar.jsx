@@ -165,7 +165,7 @@ export default function Sidebar({
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-2">
+          <div className="flex items-start gap-2">
             <div className="group/clear relative min-w-0 flex-1">
               <HoldButton
                 disabled={messages.length === 0}
