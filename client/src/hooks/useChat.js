@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { sendMessage } from "../services/api";
+import { clearConversationHistory, sendMessage } from "../services/api";
 
 // Only http/https links are ever rendered as clickable.
 const isSafeUrl = (url) => /^https?:\/\//i.test(url);
@@ -28,6 +28,7 @@ export function useChat(userId, { onAuthError } = {}) {
   const storageKey = `pixel:transcript:${userId}`;
   const [messages, setMessages] = useState(() => load(storageKey));
   const [sending, setSending] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const inflight = useRef(false);
 
   useEffect(() => {
@@ -100,7 +101,26 @@ export function useChat(userId, { onAuthError } = {}) {
     [run],
   );
 
-  const clear = useCallback(() => setMessages([]), []);
+  const clear = useCallback(async () => {
+    if (inflight.current) {
+      throw new Error("Wait for Pixel to finish before clearing chat history.");
+    }
 
-  return { messages, sending, send, retry, clear };
+    inflight.current = true;
+    setClearing(true);
+    try {
+      await clearConversationHistory();
+      try {
+        localStorage.removeItem(storageKey);
+      } catch {
+        /* the display cache is optional */
+      }
+      setMessages([]);
+    } finally {
+      inflight.current = false;
+      setClearing(false);
+    }
+  }, [storageKey]);
+
+  return { messages, sending, clearing, send, retry, clear };
 }

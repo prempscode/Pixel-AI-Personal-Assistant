@@ -69,6 +69,10 @@ export function sendMessage(message) {
   });
 }
 
+export function clearConversationHistory() {
+  return request("/api/agent/history", { method: "DELETE" });
+}
+
 /** GET /api/google/status -> boolean */
 export async function getGoogleStatus() {
   const data = await request("/api/google/status");

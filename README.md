@@ -24,6 +24,7 @@ Other features: voice input (browser Web Speech API), per-user conversation memo
 ## Privacy and account controls
 
 - Public pages are available at `/privacy` and `/terms`.
+- **Clear chat history** in the sidebar deletes the saved conversation and resets Pixel's AI context without disconnecting Google.
 - The account settings menu includes **Disconnect Google** and **Delete Pixel data**.
 - Disconnecting Google revokes the stored refresh token through Google and removes Pixel's MongoDB Google credential.
 - Delete Pixel data removes MongoDB conversations and Google credentials, attempts to revoke Google access, and signs the user out.

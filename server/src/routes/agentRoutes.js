@@ -2,6 +2,7 @@ const express = require("express");
 const rateLimit = require("express-rate-limit");
 const runAgent = require("../agent/agent");
 const authMiddleware = require("../middleware/authMiddleware");
+const Conversation = require("../models/Conversation");
 
 const router = express.Router();
 
@@ -43,6 +44,16 @@ router.post("/chat", chatLimiter, async (req, res) => {
     return res.status(500).json({
       error: "Failed to process request",
     });
+  }
+});
+
+router.delete("/history", async (req, res) => {
+  try {
+    await Conversation.deleteOne({ userId: req.user.id });
+    return res.json({ deleted: true });
+  } catch (error) {
+    console.error("Conversation history deletion error:", error);
+    return res.status(500).json({ error: "Failed to clear conversation history" });
   }
 });
 

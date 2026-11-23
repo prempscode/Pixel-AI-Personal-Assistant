@@ -3,7 +3,6 @@ import Logo from "../ui/Logo";
 import GoogleCard from "./GoogleCard";
 import { PROMPT_GROUPS } from "./prompts";
 import ServiceIcon from "../ui/ServiceIcon";
-import HoldButton from "./HoldButton";
 
 const clip = (s, n = 46) => (s.length > n ? `${s.slice(0, n).trimEnd()}…` : s);
 
@@ -23,11 +22,14 @@ export default function Sidebar({
   onPick,
   onJump,
   onClear,
+  isSending = false,
   onSignOut,
   onDeleteData,
   onClose,
 }) {
   const [confirmClear, setConfirmClear] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const [clearError, setClearError] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -36,6 +38,20 @@ export default function Sidebar({
   const meta = user.user_metadata || {};
   const name = meta.full_name || meta.name || user.email;
   const avatar = meta.avatar_url || meta.picture;
+
+  const clearHistory = async () => {
+    if (clearing || isSending) return;
+    setClearing(true);
+    setClearError("");
+    try {
+      await onClear();
+      setConfirmClear(false);
+    } catch {
+      setClearError("Couldn't clear your saved history. Check your connection, then try again.");
+    } finally {
+      setClearing(false);
+    }
+  };
 
   useEffect(() => {
     if (!settingsOpen) return;
@@ -147,55 +163,66 @@ export default function Sidebar({
 
       <div className="shrink-0 border-t border-line p-4">
         {confirmClear ? (
-          <div role="alertdialog" aria-label="Clear transcript" className="rounded-2xl border border-line-strong bg-ink-850 p-3.5">
-            <p className="text-sm font-medium">Start a new chat view?</p>
-            <p className="mt-1 text-[0.75rem] leading-snug text-muted">
-              This clears the visible transcript. Pixel may still use the last 20 messages as context.
+          <div
+            role="alertdialog"
+            aria-labelledby="clear-history-title"
+            aria-describedby="clear-history-description"
+            className="rounded-2xl border border-line-strong bg-ink-850 p-3.5"
+          >
+            <p id="clear-history-title" className="text-sm font-medium">
+              Clear chat history?
             </p>
-            <div className="mt-3 flex gap-2">
+            <p id="clear-history-description" className="mt-1 text-[0.75rem] leading-snug text-muted">
+              This deletes your saved Pixel conversation and resets its AI context. If a long chat is causing request errors, clearing it can help. Your Google connection stays intact.
+            </p>
+            {clearError && (
+              <p role="alert" className="mt-2 text-[0.72rem] leading-snug text-danger">
+                {clearError}
+              </p>
+            )}
+            <div className="mt-3 flex flex-wrap gap-2">
               <button
-                onClick={() => { onClear(); setConfirmClear(false); }}
-                className="rounded-full bg-ember px-3.5 py-1.5 text-[0.8rem] font-medium text-ink-950 transition-colors hover:bg-ember/90"
+                type="button"
+                onClick={clearHistory}
+                disabled={clearing || isSending}
+                className="min-h-9 rounded-full bg-ember px-3.5 py-1.5 text-[0.8rem] font-medium text-ink-950 transition-colors hover:bg-ember/90 disabled:cursor-wait disabled:opacity-60"
               >
-                Clear transcript
+                {clearing ? "Clearing…" : clearError ? "Try again" : "Clear history"}
               </button>
-              <button onClick={() => setConfirmClear(false)} className="rounded-full px-3.5 py-1.5 text-[0.8rem] text-muted hover:text-paper">
-                Keep
+              <button
+                type="button"
+                disabled={clearing}
+                onClick={() => {
+                  setConfirmClear(false);
+                  setClearError("");
+                }}
+                className="min-h-9 rounded-full px-3.5 py-1.5 text-[0.8rem] text-muted hover:text-paper disabled:opacity-50"
+              >
+                Cancel
               </button>
             </div>
           </div>
         ) : (
           <div className="flex items-start gap-2">
-            <div className="group/clear relative min-w-0 flex-1">
-              <HoldButton
-                disabled={messages.length === 0}
-                describedBy="clear-transcript-help"
-                onHold={() => {
-                  onClear();
-                  setConfirmClear(false);
-                }}
-                onTap={() => setConfirmClear(true)}
-                doneLabel="Transcript cleared"
+            <div className="min-w-0 flex-1">
+              <button
+                type="button"
+                disabled={isSending}
+                onClick={() => setConfirmClear(true)}
+                aria-describedby="clear-history-help"
+                className="flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-ember/30 bg-ink-850 px-3 text-[0.8rem] font-semibold text-paper transition-colors hover:border-ember/65 hover:bg-ink-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <svg viewBox="0 0 16 16" className="size-[15px]" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M2.5 4.5h11M6 4.5V3h4v1.5m2.5 0-.6 8.2H4.1l-.6-8.2M6.5 7v3.5M9.5 7v3.5" />
                 </svg>
-                Hold to clear transcript
-              </HoldButton>
+                Clear chat history
+              </button>
               <p
-                id="clear-transcript-help"
+                id="clear-history-help"
                 className="mt-2 px-1 text-[0.68rem] leading-relaxed text-dim"
               >
-                Clears this view; Pixel can still use the last 20 messages as context.
+                Removes saved messages and resets Pixel’s context.
               </p>
-              <div
-                id="clear-transcript-tooltip"
-                role="tooltip"
-                className="pointer-events-none absolute bottom-full left-0 z-30 mb-3 w-64 translate-y-1 rounded-xl border border-line-strong bg-ink-850 p-3 text-[0.75rem] leading-relaxed text-muted opacity-0 shadow-2xl transition-[opacity,transform] duration-200 group-hover/clear:translate-y-0 group-hover/clear:opacity-100 group-focus-within/clear:translate-y-0 group-focus-within/clear:opacity-100"
-              >
-                Starts a <strong className="font-semibold text-paper">new chat</strong> view by clearing this transcript. It does not{" "}
-                <strong className="font-semibold text-ember">clear context</strong>: Pixel can still use the last 20 messages.
-              </div>
             </div>
 
             <div ref={settingsRef} className="relative">

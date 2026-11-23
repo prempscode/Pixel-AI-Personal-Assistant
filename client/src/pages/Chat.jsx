@@ -43,7 +43,7 @@ export default function Chat() {
     signOut().catch(() => {});
   }, [push]);
 
-  const { messages, sending, send, retry, clear } = useChat(user.id, { onAuthError });
+  const { messages, sending, clearing, send, retry, clear } = useChat(user.id, { onAuthError });
 
   // Result of the server-side Google connect flow (?google=...), shown once.
   useEffect(() => {
@@ -99,6 +99,7 @@ export default function Chat() {
       onPick={pick}
       onJump={jump}
       onClear={clear}
+      isSending={sending || clearing}
       onSignOut={() => signOut().catch(() => push({ tone: "error", title: "Couldn't sign out", body: "Please try again." }))}
       onDeleteData={async () => {
         await deletePixelData();
@@ -213,7 +214,7 @@ export default function Chat() {
 
         <MessageList
           messages={messages}
-          sending={sending}
+          sending={sending || clearing}
           name={firstName}
           scrollerRef={scrollerRef}
           onPick={pick}

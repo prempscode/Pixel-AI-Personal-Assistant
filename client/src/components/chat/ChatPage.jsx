@@ -12,7 +12,7 @@ import { useAuth } from "../../context/AuthContext";
 import { getFirstName } from "../../lib/constants";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { useGoogleConnection } from "../../hooks/useGoogleConnection";
-import { sendMessage } from "../../services/api";
+import { clearConversationHistory, sendMessage } from "../../services/api";
 import AuthGate from "../auth/AuthGate";
 import Toast from "../ui/Toast";
 import ChatHeader from "./ChatHeader";
@@ -232,6 +232,11 @@ function ChatWorkspace({ user }) {
     window.requestAnimationFrame(() => composerRef.current?.focus());
   }, []);
 
+  const handleClearHistory = useCallback(async () => {
+    await clearConversationHistory();
+    handleNewChat();
+  }, [handleNewChat]);
+
   const handlePickPrompt = useCallback((prompt) => {
     setComposerValue(prompt);
     setSidebarOpen(false);
@@ -269,6 +274,7 @@ function ChatWorkspace({ user }) {
       open: sidebarOpen,
       onClose: () => setSidebarOpen(false),
       onNewChat: handleNewChat,
+      onClear: handleClearHistory,
       onPickPrompt: handlePickPrompt,
       google,
       onConnectGoogle: handleConnectGoogle,
@@ -279,6 +285,7 @@ function ChatWorkspace({ user }) {
       user,
       sidebarOpen,
       handleNewChat,
+      handleClearHistory,
       handlePickPrompt,
       google,
       handleConnectGoogle,

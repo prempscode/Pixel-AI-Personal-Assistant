@@ -79,8 +79,8 @@ export default function PrivacyPolicy() {
       content: (
         <>
           <p>Conversation documents are stored in MongoDB under the Supabase user ID. Each conversation retains up to 50 stored messages and loads up to the latest 20 messages for new AI requests. Google refresh credentials are stored in MongoDB with AES-256-GCM encryption: the encrypted value, initialization vector, and authentication tag are stored separately; the key is held in a server environment variable.</p>
-          <p>Pixel retains conversations and Google credentials until they are replaced or deleted through an available Pixel control. No separate numeric retention period is currently published for Supabase account data, provider logs, or backups.</p>
-          <p>From the account settings menu, you can delete Pixel conversation records and the stored Google credential. This action revokes Pixel's Google refresh-token access and signs you out. It does not delete your Supabase sign-in account or independently stored data held by Google, Groq, Supabase, or MongoDB provider backups.</p>
+          <p>Pixel retains conversations and Google credentials until they are replaced or deleted through an available Pixel control. The chat sidebar's “Clear chat history” control deletes the saved conversation and clears its AI context without disconnecting Google. No separate numeric retention period is currently published for Supabase account data, provider logs, or backups.</p>
+          <p>The account settings “Delete Pixel data” control deletes Pixel conversation records and the stored Google credential. This action revokes Pixel's Google refresh-token access and signs you out. It does not delete your Supabase sign-in account or independently stored data held by Google, Groq, Supabase, or MongoDB provider backups.</p>
         </>
       ),
     },
