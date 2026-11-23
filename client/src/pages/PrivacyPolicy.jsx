@@ -79,8 +79,8 @@ export default function PrivacyPolicy() {
       content: (
         <>
           <p>Conversation documents are stored in MongoDB under the Supabase user ID. Each conversation retains up to 50 stored messages and loads up to the latest 20 messages for new AI requests. Google refresh credentials are stored in MongoDB with AES-256-GCM encryption: the encrypted value, initialization vector, and authentication tag are stored separately; the key is held in a server environment variable.</p>
-          <p>No verified, user-specific retention period is currently documented for Supabase account data, MongoDB conversations, MongoDB credentials, provider-side logs, or backups. Pixel does not currently expose an in-app deletion control that can promise deletion of these records.</p>
-          <p className="rounded-xl border border-coral/25 bg-coral/[0.06] px-4 py-3 text-paper/75"><strong>Placeholder:</strong> The operator must set and document a retention period for conversations and Google credentials, and define provider and backup retention.</p>
+          <p>Pixel retains conversations and Google credentials until they are replaced or deleted through an available Pixel control. No separate numeric retention period is currently published for Supabase account data, provider logs, or backups.</p>
+          <p>From the account settings menu, you can delete Pixel conversation records and the stored Google credential. This action revokes Pixel's Google refresh-token access and signs you out. It does not delete your Supabase sign-in account or independently stored data held by Google, Groq, Supabase, or MongoDB provider backups.</p>
         </>
       ),
     },
@@ -114,8 +114,8 @@ export default function PrivacyPolicy() {
       heading: "Your choices and Google connection",
       content: (
         <>
-          <p>You can sign out of Pixel through the account controls in the assistant. Signing out ends the local Pixel/Supabase session but, in the current implementation, does not remove MongoDB conversations or stored Google credentials.</p>
-          <p>To stop granting Google access, open <a className="underline decoration-paper/30 underline-offset-4 hover:text-paper" href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer">Google Account permissions</a>, find Pixel, and remove access. The current Pixel code also does not provide an in-app “disconnect Google” button or backend route that deletes the encrypted refresh-token record.</p>
+          <p>You can sign out of Pixel through the account controls in the assistant. Signing out ends the local Pixel/Supabase session but does not by itself delete Pixel data or Google credentials.</p>
+          <p>When a Google account is connected, the account card provides a “Disconnect Google” control that revokes the stored refresh token and deletes Pixel's stored Google credential. You can also open <a className="underline decoration-paper/30 underline-offset-4 hover:text-paper" href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer">Google Account permissions</a>, find Pixel, and remove access directly.</p>
           <p>Revoking Pixel in Google may cause expired or revoked-token errors until Google access is connected again. Revocation should stop new Google API access, but it does not by itself delete conversation data in MongoDB or an account at Supabase.</p>
         </>
       ),
@@ -125,9 +125,8 @@ export default function PrivacyPolicy() {
       heading: "Account and data deletion",
       content: (
         <>
-          <p>There is currently no verified self-service account-deletion or data-deletion feature in the application. There is also no backend endpoint that deletes conversation records or Google credential records.</p>
-          <p><strong>Placeholder deletion procedure:</strong> The operator must configure a support or deletion request process, describe identity verification, identify which Supabase, MongoDB, and provider records are removed, document backup limitations, and provide an expected response time.</p>
-          <p>Until those capabilities exist, users should revoke Google access through Google Account permissions and sign out of Pixel. Revoking or signing out does not guarantee deletion of already stored server records.</p>
+          <p>Account settings include a “Delete Pixel data” control. It deletes Pixel conversation records and the stored Google credential, attempts to revoke Google's refresh token, and signs you out.</p>
+          <p>This control does not delete the Supabase authentication account, Google account, Groq records, or MongoDB provider backup copies. Provider-side retention and backup removal remain subject to the applicable provider. If you need the Supabase account deleted, contact the privacy email below.</p>
         </>
       ),
     },

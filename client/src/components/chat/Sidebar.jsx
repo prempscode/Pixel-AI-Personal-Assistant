@@ -16,8 +16,20 @@ function Section({ title, children }) {
   );
 }
 
-export default function Sidebar({ user, google, messages, onPick, onJump, onClear, onSignOut, onClose }) {
+export default function Sidebar({
+  user,
+  google,
+  messages,
+  onPick,
+  onJump,
+  onClear,
+  onSignOut,
+  onDeleteData,
+  onClose,
+}) {
   const [confirmClear, setConfirmClear] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsRef = useRef(null);
   const userMessages = messages.filter((m) => m.role === "user");
@@ -232,6 +244,49 @@ export default function Sidebar({ user, google, messages, onPick, onJump, onClea
                   >
                     Sign out
                   </button>
+                  {confirmDelete ? (
+                    <div className="mt-2 rounded-lg border border-danger/25 bg-danger/[0.06] p-2.5">
+                      <p className="text-[0.72rem] leading-relaxed text-paper/75">
+                        Delete Pixel conversations and Google credentials?
+                        This revokes Google access and signs you out.
+                      </p>
+                      <div className="mt-2 flex gap-2">
+                        <button
+                          type="button"
+                          disabled={deleting}
+                          onClick={async () => {
+                            setDeleting(true);
+                            try {
+                              await onDeleteData();
+                              setConfirmDelete(false);
+                              setSettingsOpen(false);
+                              window.location.assign("/");
+                            } catch {
+                              setDeleting(false);
+                            }
+                          }}
+                          className="rounded-full bg-danger px-3 py-1.5 text-[0.72rem] font-medium text-ink-950 disabled:opacity-50"
+                        >
+                          {deleting ? "Deleting…" : "Delete Pixel data"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDelete(false)}
+                          className="rounded-full px-3 py-1.5 text-[0.72rem] text-muted hover:text-paper"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDelete(true)}
+                      className="mt-1 w-full rounded-lg px-2.5 py-2 text-left text-[0.8rem] text-danger/80 transition-colors hover:bg-danger/[0.06] hover:text-danger"
+                    >
+                      Delete Pixel data
+                    </button>
+                  )}
                 </div>
               )}
             </div>

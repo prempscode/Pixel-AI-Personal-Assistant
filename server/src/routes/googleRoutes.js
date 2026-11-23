@@ -3,7 +3,7 @@ const crypto = require("crypto");
 const { google } = require("googleapis");
 const authMiddleware = require("../middleware/authMiddleware");
 const GoogleCredential = require("../models/GoogleCredential");
-const { encrypt } = require("../utils/tokenCrypto");
+const { encrypt, decrypt } = require("../utils/tokenCrypto");
 
 const router = express.Router();
 
@@ -130,6 +130,36 @@ router.get("/status", authMiddleware, async (req, res) => {
     res.json({ connected: !!credential });
   } catch (error) {
     res.status(500).json({ error: "Failed to check Google connection" });
+  }
+});
+
+// Remove Pixel's Google credential and revoke Google's refresh token.
+router.delete("/disconnect", authMiddleware, async (req, res) => {
+  try {
+    const credential = await GoogleCredential.findOne({ userId: req.user.id });
+
+    if (credential) {
+      try {
+        const refreshToken = decrypt(
+          credential.encrypted,
+          credential.iv,
+          credential.authTag,
+        );
+        const oauth2Client = getOAuthClient();
+        await oauth2Client.revokeToken(refreshToken);
+      } catch (error) {
+        // If Google's revocation endpoint rejects or is unavailable, remove
+        // Pixel's local credential anyway so it cannot be used again.
+        console.error("Google token revocation error:", error);
+      }
+
+      await GoogleCredential.deleteOne({ userId: req.user.id });
+    }
+
+    res.json({ disconnected: true });
+  } catch (error) {
+    console.error("Google disconnect error:", error);
+    res.status(500).json({ error: "Failed to disconnect Google" });
   }
 });
 

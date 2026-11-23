@@ -80,3 +80,11 @@ export async function startGoogleConnect() {
   const { url } = await request("/api/google/auth");
   window.location.href = url;
 }
+
+export function disconnectGoogle() {
+  return request("/api/google/disconnect", { method: "DELETE" });
+}
+
+export function deletePixelData() {
+  return request("/api/account/data", { method: "DELETE" });
+}

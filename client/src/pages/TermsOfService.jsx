@@ -77,8 +77,7 @@ export default function TermsOfService() {
             account connected to your Pixel account and should keep it secure.
           </p>
           <p>
-            At present, Pixel has no in-app Google-disconnect or
-            Google-credential-deletion control. You may revoke Pixel's access in{" "}
+            Pixel provides an in-app Google-disconnect control and you may also revoke Pixel's access in{" "}
             <a
               className="underline decoration-paper/30 underline-offset-4 hover:text-paper"
               href="https://myaccount.google.com/permissions"

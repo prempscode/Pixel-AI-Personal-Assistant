@@ -23,6 +23,16 @@ export default function GoogleCard({ google, compact = false }) {
         className="rounded-2xl border border-line bg-ink-850 p-3.5"
       >
         {!compact && <p className="text-[0.75rem] text-muted">Tasks, Calendar, Gmail, Drive</p>}
+        {!compact && (
+          <button
+            type="button"
+            onClick={google.disconnect}
+            disabled={google.disconnecting}
+            className="mt-3 w-full rounded-lg px-2.5 py-2 text-left text-[0.75rem] text-muted transition-colors hover:bg-paper/5 hover:text-paper disabled:opacity-50"
+          >
+            {google.disconnecting ? "Disconnecting…" : "Disconnect Google"}
+          </button>
+        )}
       </GoogleConnectedStatus>
     );
   }

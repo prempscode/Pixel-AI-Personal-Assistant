@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
-import { getGoogleStatus, startGoogleConnect } from "../services/api";
+import {
+  disconnectGoogle,
+  getGoogleStatus,
+  startGoogleConnect,
+} from "../services/api";
 
 /** status: "loading" | "connected" | "disconnected" | "error" */
 export function useGoogleStatus() {
   const [status, setStatus] = useState("loading");
   const [connecting, setConnecting] = useState(false);
   const [connectError, setConnectError] = useState("");
+  const [disconnecting, setDisconnecting] = useState(false);
 
   const [tick, setTick] = useState(0);
   const refresh = useCallback(() => setTick((n) => n + 1), []);
@@ -31,5 +36,27 @@ export function useGoogleStatus() {
     }
   }, []);
 
-  return { status, refresh, connect, connecting, connectError };
+  const disconnect = useCallback(async () => {
+    setDisconnecting(true);
+    setConnectError("");
+    try {
+      await disconnectGoogle();
+      setStatus("disconnected");
+    } catch (err) {
+      setConnectError(err.message || "Could not disconnect Google.");
+      throw err;
+    } finally {
+      setDisconnecting(false);
+    }
+  }, []);
+
+  return {
+    status,
+    refresh,
+    connect,
+    connecting,
+    disconnect,
+    disconnecting,
+    connectError,
+  };
 }

@@ -21,6 +21,15 @@ Pixel turns plain-language (or voice) requests into real actions in your Google 
 
 Other features: voice input (browser Web Speech API), per-user conversation memory, and a "Google connected" status in the header.
 
+## Privacy and account controls
+
+- Public pages are available at `/privacy` and `/terms`.
+- The account settings menu includes **Disconnect Google** and **Delete Pixel data**.
+- Disconnecting Google revokes the stored refresh token through Google and removes Pixel's MongoDB Google credential.
+- Delete Pixel data removes MongoDB conversations and Google credentials, attempts to revoke Google access, and signs the user out.
+- Data deletion does not delete the Supabase authentication account or records retained by Google, Groq, Supabase, MongoDB, hosting providers, or provider backups.
+- The footer and Google sign-in/connection UI link to both legal pages.
+
 ## How it works
 
 ```
@@ -125,6 +134,9 @@ npm test
 - **Database:** MongoDB Atlas.
 - **Backend (Render or similar):** root directory `server`, build `npm install`, start `npm start`, and add all server env vars. Set `FRONTEND_URL` to the deployed client URL and `GOOGLE_REDIRECT_URI` to `https://<backend-domain>/api/google/callback`, and add that same URI to the Google OAuth client.
 - **Frontend (Vercel or similar):** root directory `client`, add the three `VITE_` variables, and add the deployed URL to Supabase's allowed redirect URLs.
+- Add the production homepage, Privacy Policy URL, and Terms of Service URL to the Google OAuth app's consent screen.
+- The public Privacy Policy and Terms routes must be served over the verified production HTTPS domain.
+- Add the deployed frontend and backend domains to the Google Cloud OAuth configuration only after you verify ownership and test the callbacks.
 - Until the Google app passes verification, only listed test users can connect their account.
 
 ## Known limitations
@@ -132,6 +144,8 @@ npm test
 - Pending email confirmations are kept in server memory. They reset on restart and are not shared across multiple instances (use MongoDB for that).
 - There are no tools yet to list, update, or delete tasks and calendar events.
 - Gmail and Drive scopes are restricted by Google, so a public launch requires Google's app verification.
+- The Delete Pixel data action removes Pixel MongoDB data and credential records, but it does not delete the Supabase authentication account or third-party provider records.
+- Pixel does not publish an in-code numeric retention period for Supabase accounts, provider logs, or MongoDB/provider backups.
 - The 5-iteration cap means very complex requests are asked to be simplified.
 
 ## Roadmap
@@ -140,3 +154,4 @@ npm test
 - [ ] Confirm button in the chat UI for pending emails
 - [ ] Streaming responses
 - [ ] Persist pending confirmations in MongoDB
+- [ ] Supabase authentication-account deletion, using a server-side admin credential

@@ -13,6 +13,7 @@ import Composer from "../components/chat/Composer";
 import GoogleCard from "../components/chat/GoogleCard";
 import ThemeToggle from "../components/ui/ThemeToggle";
 import { cn } from "../lib/cn";
+import { deletePixelData } from "../services/api";
 
 const GOOGLE_RESULTS = {
   connected: { tone: "success", title: "Google connected", body: "Pixel can now use your Tasks, Calendar, Gmail and Drive." },
@@ -99,6 +100,10 @@ export default function Chat() {
       onJump={jump}
       onClear={clear}
       onSignOut={() => signOut().catch(() => push({ tone: "error", title: "Couldn't sign out", body: "Please try again." }))}
+      onDeleteData={async () => {
+        await deletePixelData();
+        await signOut();
+      }}
       onClose={isDesktop ? undefined : () => setDrawerOpen(false)}
     />
   );
