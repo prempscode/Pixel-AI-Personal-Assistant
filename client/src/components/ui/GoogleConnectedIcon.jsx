@@ -15,7 +15,7 @@ export default function GoogleConnectedIcon({
       aria-hidden="true"
     >
       <motion.span
-        initial={{ opacity: 0, scale: 0.72, y: 5 }}
+        initial={{ opacity: 0, scale: 0.72, x: -8 }}
         animate={iconControls}
         className="grid size-8 place-items-center rounded-lg border border-line bg-ink-800 shadow-[0_8px_24px_-16px_rgb(0_0_0/0.55)]"
       >
