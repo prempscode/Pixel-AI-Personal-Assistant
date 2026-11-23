@@ -29,6 +29,7 @@ Other features: voice input (browser Web Speech API), per-user conversation memo
 - Delete Pixel data removes MongoDB conversations and Google credentials, attempts to revoke Google access, and signs the user out.
 - Data deletion does not delete the Supabase authentication account or records retained by Google, Groq, Supabase, MongoDB, hosting providers, or provider backups.
 - The footer and Google sign-in/connection UI link to both legal pages.
+![Google unverified app warning and permission screen](google-unverified-warning.png)
 
 ## How it works
 
