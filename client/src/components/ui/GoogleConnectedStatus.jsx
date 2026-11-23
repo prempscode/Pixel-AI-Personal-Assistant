@@ -4,10 +4,12 @@ import { cn } from "../../lib/cn";
 import GoogleConnectedIcon from "./GoogleConnectedIcon";
 
 const ease = [0.16, 1, 0.3, 1];
-const pause = (duration) => new Promise((resolve) => setTimeout(resolve, duration));
+const pause = (duration) =>
+  new Promise((resolve) => setTimeout(resolve, duration));
 
 export default function GoogleConnectedStatus({
   children,
+  detail,
   className,
   labelClassName,
   labelTag = "span",
@@ -218,6 +220,9 @@ export default function GoogleConnectedStatus({
       <div className="min-w-0">
         <motion.div animate={labelControls} className="min-w-0">
           <Label className={labelClassName}>Google connected</Label>
+          {detail && (
+            <span className="block text-[0.75rem] text-muted">{detail}</span>
+          )}
         </motion.div>
         {children}
       </div>
@@ -235,8 +240,8 @@ export default function GoogleConnectedStatus({
           <strong className="font-semibold text-ok">Secure storage:</strong>{" "}
           your refresh token is encrypted on the server and tied to your
           account.{" "}
-          <strong className="font-semibold text-ember">Not shared:</strong>{" "}
-          your Google access is not shared with other Pixel users.
+          <strong className="font-semibold text-ember">Not shared:</strong> your
+          Google access is not shared with other Pixel users.
         </p>
       </div>
     </div>

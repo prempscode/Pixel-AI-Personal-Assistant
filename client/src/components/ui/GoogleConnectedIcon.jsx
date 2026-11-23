@@ -9,7 +9,7 @@ export default function GoogleConnectedIcon({
 }) {
   return (
     <span
-      className={`pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 ${
+      className={`pointer-events-none absolute top-3 left-3.5 ${
         visible ? "visible" : "invisible"
       }`}
       aria-hidden="true"
@@ -32,7 +32,13 @@ export default function GoogleConnectedIcon({
             fill="none"
             className="size-2.5 animate-spin motion-reduce:animate-none"
           >
-            <circle cx="6" cy="6" r="4.25" stroke="currentColor" opacity="0.3" />
+            <circle
+              cx="6"
+              cy="6"
+              r="4.25"
+              stroke="currentColor"
+              opacity="0.3"
+            />
             <path
               d="M6 1.75A4.25 4.25 0 0 1 10.25 6"
               stroke="currentColor"

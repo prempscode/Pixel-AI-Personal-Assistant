@@ -8,7 +8,10 @@ export default function GoogleCard({ google, compact = false }) {
 
   if (status === "loading") {
     return (
-      <div className="rounded-2xl border border-line bg-ink-850 p-3.5" aria-busy="true">
+      <div
+        className="rounded-2xl border border-line bg-ink-850 p-3.5"
+        aria-busy="true"
+      >
         <div className="h-3 w-24 animate-shimmer rounded bg-[linear-gradient(90deg,var(--color-ink-700),var(--color-ink-800),var(--color-ink-700))] bg-[length:200%_100%]" />
         <div className="mt-2.5 h-3 w-36 animate-shimmer rounded bg-[linear-gradient(90deg,var(--color-ink-700),var(--color-ink-800),var(--color-ink-700))] bg-[length:200%_100%]" />
       </div>
@@ -20,9 +23,9 @@ export default function GoogleCard({ google, compact = false }) {
       <GoogleConnectedStatus
         labelTag="p"
         labelClassName="text-sm font-medium"
+        detail={!compact ? "Tasks, Calendar, Gmail, Drive" : undefined}
         className="rounded-2xl border border-line bg-ink-850 p-3.5"
       >
-        {!compact && <p className="text-[0.75rem] text-muted">Tasks, Calendar, Gmail, Drive</p>}
         {!compact && (
           <button
             type="button"
@@ -39,9 +42,14 @@ export default function GoogleCard({ google, compact = false }) {
 
   if (status === "error") {
     return (
-      <div role="alert" className="rounded-2xl border border-danger/30 bg-danger/[0.06] p-3.5">
+      <div
+        role="alert"
+        className="rounded-2xl border border-danger/30 bg-danger/[0.06] p-3.5"
+      >
         <p className="text-sm font-medium text-danger">Couldn't check Google</p>
-        <p className="mt-0.5 text-[0.75rem] text-muted">The server didn't respond.</p>
+        <p className="mt-0.5 text-[0.75rem] text-muted">
+          The server didn't respond.
+        </p>
         <Button size="sm" variant="outline" className="mt-3" onClick={refresh}>
           Retry
         </Button>
@@ -50,18 +58,30 @@ export default function GoogleCard({ google, compact = false }) {
   }
 
   return (
-    <div className={cn("rounded-2xl border border-ember/30 bg-ember/[0.06] p-3.5")}>
+    <div
+      className={cn("rounded-2xl border border-ember/30 bg-ember/[0.06] p-3.5")}
+    >
       <p className="text-sm font-medium">Connect your Google account</p>
       <p className="mt-0.5 text-[0.78rem] leading-snug text-muted">
         Pixel needs access before it can use Tasks, Calendar, Gmail and Drive.
       </p>
-      <Button size="sm" variant="ember" className="mt-3" onClick={connect} loading={connecting}>
+      <Button
+        size="sm"
+        variant="ember"
+        className="mt-3"
+        onClick={connect}
+        loading={connecting}
+      >
         {!connecting && (
           <GoogleG className="size-4 transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transform-none" />
         )}
         Connect Google
       </Button>
-      {connectError && <p role="alert" className="mt-2 text-[0.75rem] text-danger">{connectError}</p>}
+      {connectError && (
+        <p role="alert" className="mt-2 text-[0.75rem] text-danger">
+          {connectError}
+        </p>
+      )}
     </div>
   );
 }
