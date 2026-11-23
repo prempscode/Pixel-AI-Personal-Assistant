@@ -215,10 +215,12 @@ export default function GoogleConnectedStatus({
         iconControls={iconControls}
         visible={iconVisible}
       />
-      <motion.div animate={labelControls} className="min-w-0">
-        <Label className={labelClassName}>Google connected</Label>
+      <div className="min-w-0">
+        <motion.div animate={labelControls} className="min-w-0">
+          <Label className={labelClassName}>Google connected</Label>
+        </motion.div>
         {children}
-      </motion.div>
+      </div>
 
       <div
         id="google-connected-help"

@@ -8,8 +8,8 @@ const columns = [
     title: "Product",
     links: [
       { label: "Capabilities", href: "#capabilities" },
-      { label: "How it works", href: "#how-it-works" },
-      { label: "Security", href: "#security" },
+      { label: "How it works", href: "#how" },
+      { label: "Safety", href: "#safety" },
     ],
   },
   {
@@ -35,9 +35,9 @@ export default function Footer() {
 
   return (
     <footer className="border-t border-paper/10 bg-ink">
-      <div className="container-pixel py-14">
-        <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr_auto] lg:gap-10">
-          <div>
+      <div className="mx-auto w-full max-w-7xl px-5 py-12 sm:px-8 sm:py-14 lg:px-10">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4 lg:grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(0,1fr))_auto] lg:gap-8">
+          <div className="col-span-2 min-w-0 sm:col-span-2 lg:col-span-1">
             <Link to="/" aria-label="Pixel home">
               <Logo />
             </Link>
@@ -57,7 +57,7 @@ export default function Footer() {
           </div>
 
           {columns.map((column) => (
-            <div key={column.title}>
+            <div key={column.title} className="min-w-0">
               <h3 className="text-[9px] font-bold tracking-[0.16em] text-paper/28 uppercase">
                 {column.title}
               </h3>
@@ -85,7 +85,7 @@ export default function Footer() {
             </div>
           ))}
 
-          <div className="flex flex-col items-start gap-3 lg:items-end">
+          <div className="col-span-2 flex min-w-0 flex-col items-start gap-3 sm:col-span-2 lg:col-span-1 lg:items-end">
             <Link
               to="/app"
               className="group inline-flex items-center gap-2 text-[11.5px] font-semibold text-paper/65 transition-colors hover:text-paper"
@@ -103,11 +103,11 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-14 flex flex-col gap-4 border-t border-paper/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-12 flex flex-col flex-wrap gap-3 border-t border-paper/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[9.5px] text-paper/32">
             © {year} Pixel. Built for Google Workspace.
           </p>
-          <div className="flex items-center gap-2 text-[9px] text-paper/32">
+          <div className="flex flex-wrap items-center gap-2 text-[9px] text-paper/32">
             <span className="size-1 rounded-[1px] bg-paper/25" />
             Thoughtfully quiet software
             <span className="size-1 rounded-[1px] bg-volt/55" />

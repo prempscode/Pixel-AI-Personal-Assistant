@@ -28,7 +28,7 @@ export default function GoogleCard({ google, compact = false }) {
             type="button"
             onClick={google.disconnect}
             disabled={google.disconnecting}
-            className="mt-3 w-full rounded-lg px-2.5 py-2 text-left text-[0.75rem] text-muted transition-colors hover:bg-paper/5 hover:text-paper disabled:opacity-50"
+            className="mt-3 block box-border min-h-9 w-full min-w-0 max-w-full rounded-lg px-2.5 py-2 text-left text-[0.75rem] text-muted transition-colors hover:bg-paper/5 hover:text-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember disabled:opacity-50"
           >
             {google.disconnecting ? "Disconnecting…" : "Disconnect Google"}
           </button>
