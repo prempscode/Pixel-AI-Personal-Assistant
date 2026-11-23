@@ -2,17 +2,18 @@ import { useState, useEffect, useRef } from "react";
 
 function VoiceInput({ onResult }) {
   const [listening, setListening] = useState(false);
-  const [supported, setSupported] = useState(true);
+  const [supported] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      Boolean(window.SpeechRecognition || window.webkitSpeechRecognition),
+  );
   const recognitionRef = useRef(null);
 
   useEffect(() => {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    if (!SpeechRecognition) {
-      setSupported(false);
-      return;
-    }
+    if (!SpeechRecognition) return;
 
     const recognition = new SpeechRecognition();
     recognition.lang = "en-IN";

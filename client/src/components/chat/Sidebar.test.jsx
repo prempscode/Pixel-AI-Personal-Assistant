@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import Sidebar from "./Sidebar";
 
 vi.mock("../ui/Logo", () => ({ default: () => <div>Logo</div> }));
@@ -10,6 +10,7 @@ vi.mock("../ui/ServiceIcon", () => ({ default: () => <span /> }));
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
 });
 
 function renderSidebar(onClear, messages = []) {
@@ -32,7 +33,7 @@ describe("sidebar chat history clearing", () => {
     const onClear = vi.fn().mockResolvedValue(undefined);
     renderSidebar(onClear);
 
-    fireEvent.click(screen.getByRole("button", { name: "Clear chat history" }));
+    fireEvent.click(screen.getByRole("button", { name: "Hold to clear chat history" }));
     expect(screen.getByRole("alertdialog").textContent).toContain(
       "Your Google connection stays intact.",
     );
@@ -49,12 +50,23 @@ describe("sidebar chat history clearing", () => {
       .mockResolvedValueOnce(undefined);
     renderSidebar(onClear);
 
-    fireEvent.click(screen.getByRole("button", { name: "Clear chat history" }));
+    fireEvent.click(screen.getByRole("button", { name: "Hold to clear chat history" }));
     fireEvent.click(screen.getByRole("button", { name: "Clear history" }));
     expect(await screen.findByText(/check your connection, then try again/i)).not.toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "Try again" }));
     await waitFor(() => expect(onClear).toHaveBeenCalledTimes(2));
     await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
+  });
+
+  it("uses the hold interaction to open the confirmation", () => {
+    vi.useFakeTimers();
+    renderSidebar(vi.fn());
+    const button = screen.getByRole("button", { name: "Hold to clear chat history" });
+
+    fireEvent.keyDown(button, { key: " " });
+    act(() => vi.advanceTimersByTime(1500));
+
+    expect(screen.getByRole("alertdialog")).not.toBeNull();
   });
 });

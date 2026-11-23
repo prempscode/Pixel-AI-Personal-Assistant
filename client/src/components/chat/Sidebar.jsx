@@ -3,6 +3,7 @@ import Logo from "../ui/Logo";
 import GoogleCard from "./GoogleCard";
 import { PROMPT_GROUPS } from "./prompts";
 import ServiceIcon from "../ui/ServiceIcon";
+import HoldButton from "./HoldButton";
 
 const clip = (s, n = 46) => (s.length > n ? `${s.slice(0, n).trimEnd()}…` : s);
 
@@ -204,25 +205,32 @@ export default function Sidebar({
           </div>
         ) : (
           <div className="flex items-start gap-2">
-            <div className="min-w-0 flex-1">
-              <button
-                type="button"
-                disabled={isSending}
-                onClick={() => setConfirmClear(true)}
-                aria-describedby="clear-history-help"
-                className="flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-ember/30 bg-ink-850 px-3 text-[0.8rem] font-semibold text-paper transition-colors hover:border-ember/65 hover:bg-ink-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember disabled:cursor-not-allowed disabled:opacity-40"
+            <div className="group/clear relative min-w-0 flex-1">
+              <HoldButton
+                disabled={isSending || clearing}
+                describedBy="clear-history-tooltip"
+                onHold={() => {
+                  setClearError("");
+                  setConfirmClear(true);
+                }}
+                onTap={() => {
+                  setClearError("");
+                  setConfirmClear(true);
+                }}
+                doneLabel="Confirm below"
               >
                 <svg viewBox="0 0 16 16" className="size-[15px]" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M2.5 4.5h11M6 4.5V3h4v1.5m2.5 0-.6 8.2H4.1l-.6-8.2M6.5 7v3.5M9.5 7v3.5" />
                 </svg>
-                Clear chat history
-              </button>
-              <p
-                id="clear-history-help"
-                className="mt-2 px-1 text-[0.68rem] leading-relaxed text-dim"
+                Hold to clear chat history
+              </HoldButton>
+              <div
+                id="clear-history-tooltip"
+                role="tooltip"
+                className="pointer-events-none absolute bottom-full left-0 z-30 mb-3 w-64 translate-y-1 rounded-xl border border-line-strong bg-ink-850 p-3 text-[0.75rem] leading-relaxed text-muted opacity-0 shadow-2xl transition-[opacity,transform] duration-200 group-hover/clear:translate-y-0 group-hover/clear:opacity-100 group-focus-within/clear:translate-y-0 group-focus-within/clear:opacity-100"
               >
-                Removes saved messages and resets Pixel’s context.
-              </p>
+                Clears the saved Pixel chat and its AI context. You’ll confirm before it is deleted. This can help if a long conversation causes request errors. Your Google connection stays intact.
+              </div>
             </div>
 
             <div ref={settingsRef} className="relative">
