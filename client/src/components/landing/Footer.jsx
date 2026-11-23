@@ -20,6 +20,13 @@ const columns = [
       { label: "Tasks & Drive", href: "#capabilities" },
     ],
   },
+  {
+    title: "Legal",
+    links: [
+      { label: "Privacy Policy", to: "/privacy" },
+      { label: "Terms of Service", to: "/terms" },
+    ],
+  },
 ];
 
 export default function Footer() {
@@ -29,7 +36,7 @@ export default function Footer() {
   return (
     <footer className="border-t border-paper/10 bg-ink">
       <div className="container-pixel py-14">
-        <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_auto] lg:gap-10">
+        <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr_auto] lg:gap-10">
           <div>
             <Link to="/" aria-label="Pixel home">
               <Logo />
@@ -57,12 +64,21 @@ export default function Footer() {
               <ul className="mt-4 space-y-3">
                 {column.links.map((link) => (
                   <li key={link.label}>
-                    <a
-                      href={link.href}
-                      className="link-underline text-[11.5px] text-paper/55 transition-colors duration-300 hover:text-paper"
-                    >
-                      {link.label}
-                    </a>
+                    {link.to ? (
+                      <Link
+                        to={link.to}
+                        className="link-underline text-[11.5px] text-paper/55 transition-colors duration-300 hover:text-paper"
+                      >
+                        {link.label}
+                      </Link>
+                    ) : (
+                      <a
+                        href={link.href}
+                        className="link-underline text-[11.5px] text-paper/55 transition-colors duration-300 hover:text-paper"
+                      >
+                        {link.label}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -71,7 +87,7 @@ export default function Footer() {
 
           <div className="flex flex-col items-start gap-3 lg:items-end">
             <Link
-              to="/chat"
+              to="/app"
               className="group inline-flex items-center gap-2 text-[11.5px] font-semibold text-paper/65 transition-colors hover:text-paper"
             >
               {user ? "Open the assistant" : "Sign in"}

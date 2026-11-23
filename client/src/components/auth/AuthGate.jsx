@@ -225,6 +225,17 @@ export default function AuthGate() {
                 servers. Google access is requested only after you connect your
                 workspace.
               </p>
+              <p className="mt-4 text-center text-[11px] text-paper/38">
+                By continuing, you agree to the{" "}
+                <Link className="underline underline-offset-4 hover:text-paper" to="/terms">
+                  Terms
+                </Link>{" "}
+                and{" "}
+                <Link className="underline underline-offset-4 hover:text-paper" to="/privacy">
+                  Privacy Policy
+                </Link>
+                .
+              </p>
             </div>
 
             <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-paper/30">

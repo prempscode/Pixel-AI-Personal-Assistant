@@ -5,6 +5,8 @@ import { useAuth } from "./context/AuthContext";
 import ScreenLoader from "./components/ui/ScreenLoader";
 import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 
 // The chat page is only needed after sign-in, so it ships as its own chunk.
 const Chat = lazy(() => import("./pages/Chat"));
@@ -40,6 +42,8 @@ export default function App() {
     <AnimatePresence mode="wait" initial={false}>
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Page><Landing /></Page>} />
+        <Route path="/privacy" element={<Page><PrivacyPolicy /></Page>} />
+        <Route path="/terms" element={<Page><TermsOfService /></Page>} />
         <Route
           path="/app"
           element={

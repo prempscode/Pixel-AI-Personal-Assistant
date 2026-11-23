@@ -9,6 +9,7 @@ import Hero from "../components/landing/Hero";
 import Capabilities from "../components/landing/Capabilities";
 import Safety from "../components/landing/Safety";
 import FinalCta from "../components/landing/FinalCta";
+import Footer from "../components/landing/Footer";
 
 // GSAP + ScrollTrigger are only needed for this one section.
 const HowItWorks = lazy(() => import("../components/landing/HowItWorks"));
@@ -60,6 +61,7 @@ export default function Landing() {
         <Safety />
         <FinalCta {...shared} />
       </main>
+      <Footer />
     </div>
   );
 }

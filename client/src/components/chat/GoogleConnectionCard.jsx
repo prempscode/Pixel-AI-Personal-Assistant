@@ -5,6 +5,7 @@ import {
   Loader2,
   RefreshCw,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { cn } from "../../lib/cn";
 
 function ScopePill({ label }) {
@@ -120,6 +121,10 @@ export default function GoogleConnectionCard({
           </button>
         </>
       )}
+      <div className="mt-3 flex gap-3 text-[8.5px] text-paper/28">
+        <Link className="transition hover:text-paper/60" to="/privacy">Privacy</Link>
+        <Link className="transition hover:text-paper/60" to="/terms">Terms</Link>
+      </div>
     </div>
   );
 }
