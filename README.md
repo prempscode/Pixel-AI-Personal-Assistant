@@ -39,9 +39,8 @@ Pixel requests access to sensitive Google services (Gmail, Drive) and hasn't com
 2. Click **Go to pixel-ai-personal-assistant.onrender.com (unsafe)**
 3. Select the permissions you want, then continue
 
-![Google unverified app warning](docs/images/google-unverified-warning.png)
-
 </details>
+
 ![Google unverified app warning and permission screen](google-unverified-warning.png)
 
 ## How it works
