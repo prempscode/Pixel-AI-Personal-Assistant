@@ -29,6 +29,19 @@ Other features: voice input (browser Web Speech API), per-user conversation memo
 - Delete Pixel data removes MongoDB conversations and Google credentials, attempts to revoke Google access, and signs the user out.
 - Data deletion does not delete the Supabase authentication account or records retained by Google, Groq, Supabase, MongoDB, hosting providers, or provider backups.
 - The footer and Google sign-in/connection UI link to both legal pages.
+
+<details>
+<summary><b>🔐 Seeing "Google hasn't verified this app"? Click here</b></summary>
+
+Pixel requests access to sensitive Google services (Gmail, Drive) and hasn't completed Google's verification yet. Only continue if you trust the developer.
+
+1. Click **Advanced**
+2. Click **Go to pixel-ai-personal-assistant.onrender.com (unsafe)**
+3. Select the permissions you want, then continue
+
+![Google unverified app warning](docs/images/google-unverified-warning.png)
+
+</details>
 ![Google unverified app warning and permission screen](google-unverified-warning.png)
 
 ## How it works
