@@ -56,7 +56,9 @@ export default function GoogleCard({ google, compact = false }) {
         Pixel needs access before it can use Tasks, Calendar, Gmail and Drive.
       </p>
       <Button size="sm" variant="ember" className="mt-3" onClick={connect} loading={connecting}>
-        {!connecting && <GoogleG />}
+        {!connecting && (
+          <GoogleG className="size-4 transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transform-none" />
+        )}
         Connect Google
       </Button>
       {connectError && <p role="alert" className="mt-2 text-[0.75rem] text-danger">{connectError}</p>}

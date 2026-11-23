@@ -64,7 +64,7 @@ export default function GoogleConnectedStatus({
     await iconControls.start({
       opacity: [0, 1],
       scale: [0.55, 1.16, 1],
-      x: [-8, 3, 0],
+      y: [5, -3, 0],
       transition: { duration: 0.5, ease },
     });
     if (!isCurrent()) return;
@@ -118,7 +118,7 @@ export default function GoogleConnectedStatus({
     await iconControls.start({
       opacity: 0,
       scale: 0.72,
-      x: -8,
+      y: 5,
       transition: { duration: 0.32, ease },
     });
     if (!isCurrent()) return;
